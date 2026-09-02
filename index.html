@@ -37,14 +37,43 @@
         .modal-overlay { background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
         .scale-active:active { transform: scale(0.95); transition: transform 0.1s; }
 
-        /* CẤU HÌNH GIAO DIỆN IN ẨN CÁC PHẦN THỪA (CHỈ IN HÓA ĐƠN) */
+        /* CẤU HÌNH GIAO DIỆN IN MÁY IN NHIỆT TỐI ƯU NHẤT */
         @media print {
-            body * { visibility: hidden; }
-            #printable-bill, #printable-bill * { visibility: visible; }
-            #printable-bill { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 10px; background: white; box-shadow: none; }
-            .modal-overlay { background: transparent !important; }
-            #bill-detail-modal { box-shadow: none; border: none; }
-            button { display: none !important; }
+            @page { margin: 0; } /* Bỏ lề mặc định của trình duyệt để không in chữ thừa (URL, ngày tháng) */
+            
+            /* Giải phóng chiều cao cố định để nội dung in có thể dài tùy ý */
+            body, html { 
+                background: white !important; 
+                height: auto !important; 
+                overflow: visible !important; 
+            }
+            
+            /* Ẩn sạch sẽ mọi thứ trên app */
+            aside, main, nav { display: none !important; }
+            .print-hidden { display: none !important; }
+            
+            /* Biến Modal thành nội dung chính của trang in */
+            #bill-detail-modal { 
+                position: static !important; 
+                display: block !important; 
+                background: white !important; 
+                padding: 0 !important; 
+            }
+            
+            /* Canh lề chuẩn cho bill */
+            #bill-detail-modal > div { 
+                box-shadow: none !important; 
+                border: none !important; 
+                border-radius: 0 !important;
+                max-width: 100% !important; 
+                height: auto !important; 
+                max-height: none !important; 
+            }
+            
+            #printable-bill { 
+                padding: 15px !important; 
+                overflow: visible !important; 
+            }
         }
     </style>
 </head>
@@ -131,7 +160,7 @@
                             <span class="font-bold text-gray-600">Tổng Tiền:</span>
                             <span id="cart-total" class="font-bold text-2xl text-red-500">0 đ</span>
                         </div>
-                        <button onclick="openPaymentModal()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow-md transition scale-active flex items-center justify-center gap-2">
+                        <button onclick="checkoutCart()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow-md transition scale-active flex items-center justify-center gap-2">
                             <i class="fa-solid fa-check-double"></i> Xác Nhận Bán
                         </button>
                     </div>
@@ -263,7 +292,7 @@
             </div>
         </section>
 
-        <!-- TAB THỐNG KÊ -->
+        <!-- TAB THỐNG KÊ NGÀY TỔNG QUAN -->
         <section id="tab-stats" class="tab-content hidden">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                 <h2 class="text-2xl font-bold text-inni-blue"><i class="fa-solid fa-chart-pie mr-2"></i>Thống Kê Doanh Thu</h2>
@@ -383,7 +412,7 @@
     <div id="bill-detail-modal" class="fixed inset-0 modal-overlay z-[60] hidden flex items-center justify-center sm:p-4">
         <div class="bg-white sm:rounded-xl shadow-2xl w-full h-full sm:h-auto sm:max-h-[90vh] max-w-sm overflow-hidden animate-fade-in flex flex-col">
             
-            <div class="flex justify-between items-center bg-gray-100 px-4 py-3 border-b shrink-0">
+            <div class="flex justify-between items-center bg-gray-100 px-4 py-3 border-b shrink-0 print-hidden">
                 <h3 class="font-bold text-gray-700"><i class="fa-solid fa-receipt mr-2"></i>Chi tiết hóa đơn</h3>
                 <button onclick="closeBillModal()" class="text-gray-400 hover:text-red-500 text-xl w-8 h-8 flex justify-center items-center rounded-full hover:bg-gray-200 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
@@ -420,7 +449,7 @@
                 <div class="text-center text-xs text-gray-400 italic">Cảm ơn quý khách & Hẹn gặp lại!</div>
             </div>
             
-            <div class="bg-gray-50 p-3 border-t flex gap-2 shrink-0">
+            <div class="bg-gray-50 p-3 border-t flex gap-2 shrink-0 print-hidden">
                 <button onclick="window.print()" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg shadow-sm transition scale-active flex justify-center items-center gap-2 text-sm">
                     <i class="fa-solid fa-print"></i> In Bill
                 </button>
@@ -802,6 +831,9 @@
             closePaymentModal();
         }
 
+        // ==========================================
+        // LỊCH SỬ BÁN HÀNG VÀ XUẤT EXCEL
+        // ==========================================
         function renderHistory() {
             const list = document.getElementById('history-list');
             const empty = document.getElementById('history-empty');
@@ -908,9 +940,6 @@
             }
         }
 
-        // ==========================================
-        // TÍNH NĂNG MỚI: XUẤT CSV CHUẨN KHÔNG LẶP CỘT
-        // ==========================================
         function exportStatsToCSV() {
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
             csvContent += "Tên Sản Phẩm,Đơn Giá Hiện Tại,Tổng Số Lượng Đã Bán,Tổng Doanh Thu\n";
@@ -953,7 +982,7 @@
             document.body.removeChild(link);
         }
 
-        // Đã sửa lại lỗi lặp cột ở file CSV
+        // --- ĐÃ TỐI ƯU CỘT CSV KHÔNG BỊ TRÙNG LẶP CHO CÙNG 1 BILL ---
         function exportToCSV() {
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
             csvContent += "Ngày,Giờ Giao Dịch,Mã Hóa Đơn,Thu Ngân,Sản Phẩm,Đơn Giá,Số Lượng,Thành Tiền,Tổng Hóa Đơn\n";
@@ -965,10 +994,10 @@
                         bill.items.forEach((item, index) => {
                             let safeName = `"${item.name.replace(/"/g, '""')}"`;
                             if (index === 0) {
-                                // Dòng đầu của Bill: In đầy đủ
+                                // Dòng đầu của Bill: In đầy đủ thông tin chung
                                 csvContent += `${date},${bill.time},${bill.id},${bill.seller},${safeName},${item.price},${item.qty},${item.total},${bill.total}\n`;
                             } else {
-                                // Dòng tiếp theo của cùng Bill: Để trống các cột trùng lặp
+                                // Dòng thứ 2 trở đi của Bill: Để trống Ngày, Giờ, Mã Hóa Đơn, Thu Ngân, Tổng Hóa Đơn
                                 csvContent += `,,,,${safeName},${item.price},${item.qty},${item.total},\n`;
                             }
                         });
