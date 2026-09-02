@@ -2,10 +2,12 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Tạp Hóa Huy Hoàng - Tạp Hóa Thông Minh</title>
     
     <meta name="apple-mobile-web-app-title" content="Tạp Hóa Huy Hoàng">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="icon" sizes="192x192" href="icon.png">
@@ -34,8 +36,28 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
         .modal-overlay { background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
-        .scale-active:active { transform: scale(0.95); transition: transform 0.1s; }
+        
+        /* Hiệu ứng nảy mượt mà cho các mặt hàng và nút bấm */
+        .scale-active { transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s, border-color 0.15s; }
+        .scale-active:active { transform: scale(0.92); }
+        .item-added { border-color: #22c55e !important; box-shadow: 0 4px 6px -1px rgba(34, 197, 94, 0.3) !important; }
+
+        /* CSS Màn hình Loading Splash Screen */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #1d4ed8; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .splash-fade-out { opacity: 0; transform: scale(1.05); pointer-events: none; }
+        .pulse-logo { animation: pulseLogo 1.5s infinite; }
+        @keyframes pulseLogo {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
 
         @media print {
             body * { visibility: hidden; }
@@ -48,6 +70,17 @@
     </style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 flex flex-col md:flex-row h-[100dvh] overflow-hidden">
+
+    <!-- MÀN HÌNH CHỜ LOADING (SPLASH SCREEN) -->
+    <div id="splash-screen">
+        <div class="w-24 h-24 bg-white rounded-2xl flex items-center justify-center pulse-logo shadow-2xl mb-6">
+            <i class="fa-solid fa-cart-shopping text-5xl text-inni-blue"></i>
+        </div>
+        <h1 class="text-3xl font-black text-white tracking-wider mb-2">HUY HOÀNG</h1>
+        <p class="text-blue-200 text-sm font-medium flex items-center gap-2">
+            <i class="fa-solid fa-circle-notch fa-spin"></i> Đang tải dữ liệu...
+        </p>
+    </div>
 
     <!-- SIDEBAR CHO MÁY TÍNH -->
     <aside class="w-64 bg-inni-blue text-white flex flex-col shadow-xl z-10 hidden md:flex shrink-0">
@@ -324,7 +357,6 @@
     </main>
 
     <!-- THANH MENU ĐIỀU HƯỚNG ĐIỆN THOẠI -->
-    <!-- ĐÃ CẬP NHẬT LẠI CÁC NÚT ĐỂ CÓ THỂ XÓA CLASS MÀU XANH KHI KHÔNG ĐƯỢC CHỌN -->
     <nav class="w-full bg-white border-t border-gray-200 flex justify-between pt-2 pb-safe z-40 md:hidden shadow-[0_-10px_20px_rgba(0,0,0,0.05)] px-1 shrink-0">
         <button onclick="switchTab('tab-sell')" id="btn-mobile-tab-sell" class="mobile-nav-btn flex flex-col items-center px-1 text-inni-blue font-bold flex-1 scale-active">
             <i class="fa-solid fa-cash-register text-[18px] mb-1"></i>
@@ -494,6 +526,15 @@
     </div>
 
     <script>
+        // Xóa Màn Hình Loading (Splash Screen) sau khi App đã tải xong cơ bản (1.5 giây)
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                const splash = document.getElementById('splash-screen');
+                splash.classList.add('splash-fade-out');
+                setTimeout(() => splash.remove(), 500); 
+            }, 1500);
+        });
+
         // ==========================================
         // 1. CẤU HÌNH FIREBASE CLOUD
         // ==========================================
@@ -517,9 +558,8 @@
         let currentViewedDate = null;
         let currentCartTotal = 0;
 
-        // Hàm hỗ trợ format tiền tệ khi nhập liệu
         function formatCurrencyInput(input) {
-            let val = input.value.replace(/\./g, '').replace(/\D/g, ''); // Bỏ dấu chấm và chữ
+            let val = input.value.replace(/\./g, '').replace(/\D/g, ''); 
             if (val === '') {
                 input.value = '';
                 return;
@@ -527,7 +567,6 @@
             input.value = parseInt(val).toLocaleString('vi-VN').replace(/,/g, '.');
         }
 
-        // Lấy giá trị số nguyên từ ô input đã format
         function getRawNumberFromInput(inputId) {
             let val = document.getElementById(inputId).value.replace(/\./g, '');
             return parseInt(val) || 0;
@@ -637,11 +676,9 @@
             void targetTab.offsetWidth; 
             targetTab.classList.add('animate-fade-in');
             
-            // Xử lý menu Desktop
             document.querySelectorAll('aside nav button').forEach(el => el.classList.remove('bg-blue-800'));
             if(document.getElementById('btn-' + tabId)) document.getElementById('btn-' + tabId).classList.add('bg-blue-800');
             
-            // TỐI ƯU MENU MOBILE CHUẨN: Xóa hết màu xanh của TẤT CẢ các nút trước khi thêm màu xanh cho nút mới
             document.querySelectorAll('.mobile-nav-btn').forEach(el => {
                 el.classList.remove('text-inni-blue', 'font-bold');
                 el.classList.add('text-gray-400');
@@ -657,6 +694,9 @@
             if (tabId === 'tab-stats') { renderCalendar(); calculateRevenueStats(); }
         }
 
+        // ==========================================
+        // GIAO DIỆN BÁN HÀNG & GIỎ HÀNG 
+        // ==========================================
         function renderSellGrid() {
             const grid = document.getElementById('sell-grid');
             const noResult = document.getElementById('sell-no-result');
@@ -677,9 +717,10 @@
 
                 const isOutOfStock = item.stock <= 0;
                 const safeName = item.name.replace(/'/g, "\\'");
-
+                
+                // Đã thêm id để áp dụng hiệu ứng viền xanh nhấp nháy
                 grid.innerHTML += `
-                    <div onclick="addToCart('${item.id}', '${safeName}', ${item.price}, ${item.stock})" class="bg-white border border-gray-200 rounded-xl p-2 shadow-sm flex flex-col justify-between hover:shadow-md transition cursor-pointer scale-active ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}">
+                    <div id="item-card-${item.id}" onclick="addToCart('${item.id}', '${safeName}', ${item.price}, ${item.stock})" class="bg-white border border-gray-200 rounded-xl p-2 shadow-sm flex flex-col justify-between cursor-pointer scale-active ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}">
                         <div>
                             ${imgTag}
                             <div class="font-bold text-gray-800 text-xs line-clamp-2 leading-tight h-8 mb-1">${item.name}</div>
@@ -697,7 +738,14 @@
             renderCart(); 
         }
 
+        // Tối ưu hiệu ứng giật nảy + Đổi viền xanh báo hiệu đã chọn
         function addToCart(id, name, price, stock) {
+            const card = document.getElementById('item-card-' + id);
+            if(card) {
+                card.classList.add('item-added');
+                setTimeout(() => card.classList.remove('item-added'), 300);
+            }
+
             if (!cart[id]) {
                 cart[id] = { name, price, qty: 0, maxStock: stock };
             }
@@ -844,6 +892,9 @@
             closePaymentModal();
         }
 
+        // ==========================================
+        // LỊCH SỬ BÁN HÀNG VÀ XUẤT EXCEL
+        // ==========================================
         function renderHistory() {
             const list = document.getElementById('history-list');
             const empty = document.getElementById('history-empty');
