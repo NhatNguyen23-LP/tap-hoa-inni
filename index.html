@@ -67,10 +67,6 @@
     <!-- NỘI DUNG CHÍNH -->
     <main class="flex-1 relative overflow-y-auto p-4 md:p-6 pb-32 md:pb-6">
 
-        <div id="cloud-status" class="absolute top-2 right-4 md:top-4 md:right-8 text-gray-400 flex items-center gap-1 text-xs font-bold transition-colors z-50">
-            <i class="fa-solid fa-cloud-arrow-up"></i> Đang kết nối...
-        </div>
-
         <!-- TAB 1: BÁN HÀNG VÀ GIỎ HÀNG -->
         <section id="tab-sell" class="tab-content animate-fade-in md:h-full flex flex-col">
             <h2 class="text-2xl font-bold mb-4 text-inni-blue"><i class="fa-solid fa-cash-register mr-2"></i>Bán Hàng</h2>
@@ -259,6 +255,14 @@
 
         <!-- TAB THỐNG KÊ NGÀY TỔNG QUAN -->
         <section id="tab-stats" class="tab-content hidden">
+            <!-- NÚT XUẤT DOANH THU ĐƯỢC THÊM MỚI TẠI ĐÂY -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+                <h2 class="text-2xl font-bold text-inni-blue"><i class="fa-solid fa-chart-pie mr-2"></i>Thống Kê Doanh Thu</h2>
+                <button onclick="exportStatsToCSV()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded shadow transition scale-active flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-file-excel"></i> Xuất Báo Cáo Tổng (CSV)
+                </button>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border-t-4 border-green-500 flex items-center justify-between hover:shadow-md transition">
                     <div>
@@ -871,6 +875,52 @@
             }
         }
 
+        // ==========================================
+        // TÍNH NĂNG MỚI: XUẤT BÁO CÁO TỔNG DOANH THU TOÀN BỘ (CSV)
+        // ==========================================
+        function exportStatsToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
+            csvContent += "Tên Sản Phẩm,Đơn Giá Hiện Tại,Tổng Số Lượng Đã Bán,Tổng Doanh Thu\n";
+
+            let itemStats = {};
+            let grandTotal = 0;
+
+            for (let date in dailySales) {
+                let dayData = dailySales[date];
+                if (dayData.items) {
+                    for (let itemName in dayData.items) {
+                        if (!itemStats[itemName]) {
+                            itemStats[itemName] = { price: dayData.items[itemName].price, qty: 0, total: 0 };
+                        }
+                        itemStats[itemName].qty += dayData.items[itemName].qty;
+                        itemStats[itemName].total += (dayData.items[itemName].price * dayData.items[itemName].qty);
+                    }
+                }
+                if (dayData.total) {
+                    grandTotal += dayData.total;
+                }
+            }
+
+            // Sắp xếp các món bán chạy nhất lên trên
+            let sortedItems = Object.keys(itemStats).sort((a, b) => itemStats[b].qty - itemStats[a].qty);
+
+            sortedItems.forEach(itemName => {
+                let stat = itemStats[itemName];
+                let safeName = `"${itemName.replace(/"/g, '""')}"`;
+                csvContent += `${safeName},${stat.price},${stat.qty},${stat.total}\n`;
+            });
+
+            csvContent += `\nTỔNG CỘNG TẤT CẢ DOANH THU,,,${grandTotal}\n`;
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Bao_Cao_Tong_Doanh_Thu_${getLocalTodayString()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         function exportToCSV() {
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
             csvContent += "Ngày,Giờ Giao Dịch,Mã Hóa Đơn,Thu Ngân,Sản Phẩm,Đơn Giá,Số Lượng,Thành Tiền,Tổng Hóa Đơn\n";
@@ -928,7 +978,7 @@
             if (!name || isNaN(price) || isNaN(stock)) return alert("Vui lòng nhập đủ thông tin!");
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tải lên Đám mây...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tải lên...';
 
             let base64 = null;
             if (imageInput.files.length > 0) {
@@ -948,7 +998,7 @@
                 document.getElementById('prod-price').value = ''; 
                 document.getElementById('prod-stock').value = ''; 
                 document.getElementById('prod-image').value = '';
-                alert("Lưu Đám Mây thành công!");
+                alert("Đã lưu hàng hóa mới!");
                 switchTab('tab-sell');
             } catch (e) { alert("Lỗi: " + e.message); }
             
