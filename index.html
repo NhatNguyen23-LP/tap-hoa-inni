@@ -161,7 +161,7 @@
                             <span class="font-bold text-gray-600">Tổng Tiền:</span>
                             <span id="cart-total" class="font-bold text-2xl text-red-500">0 đ</span>
                         </div>
-                        <button onclick="openPaymentModal()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow-md transition scale-active flex items-center justify-center gap-2">
+                        <button onclick="checkoutCart()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow-md transition scale-active flex items-center justify-center gap-2">
                             <i class="fa-solid fa-check-double"></i> Xác Nhận Bán
                         </button>
                     </div>
@@ -413,7 +413,7 @@
         </div>
     </div>
 
-    <!-- MODAL CHI TIẾT BILL (GIAO DIỆN MÁY IN NHIỆT) -->
+    <!-- MODAL CHI TIẾT BILL -->
     <div id="bill-detail-modal" class="fixed inset-0 modal-overlay z-[60] hidden flex items-center justify-center sm:p-4">
         <div class="bg-white sm:rounded-xl shadow-2xl w-full h-full sm:h-auto sm:max-h-[90vh] max-w-sm overflow-hidden animate-fade-in flex flex-col">
             
@@ -472,7 +472,7 @@
     <div id="edit-modal" class="fixed inset-0 modal-overlay z-[60] hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in flex flex-col max-h-full">
             <div class="p-4 bg-inni-blue text-white flex justify-between items-center shrink-0">
-                <h3 class="font-bold text-lg"><i class="fa-solid fa-pen-to-square mr-2"></i>Sửa Thông Tin</h3>
+                <h3 class="font-bold text-lg"><i class="fa-solid fa-pen-to-square mr-2"></i>Sửa Thôngุ Tin</h3>
                 <button onclick="closeEditModal()" class="text-blue-200 hover:text-white transition text-xl"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-5 space-y-4 overflow-y-auto">
@@ -526,12 +526,13 @@
     </div>
 
     <script>
-        // Xóa Màn Hình Loading (Splash Screen) sau khi App đã tải xong cơ bản (1.5 giây)
         window.addEventListener('load', function() {
             setTimeout(function() {
                 const splash = document.getElementById('splash-screen');
-                splash.classList.add('splash-fade-out');
-                setTimeout(() => splash.remove(), 500); 
+                if (splash) {
+                    splash.classList.add('splash-fade-out');
+                    setTimeout(() => splash.remove(), 500); 
+                }
             }, 1500);
         });
 
@@ -718,7 +719,6 @@
                 const isOutOfStock = item.stock <= 0;
                 const safeName = item.name.replace(/'/g, "\\'");
                 
-                // Đã thêm id để áp dụng hiệu ứng viền xanh nhấp nháy
                 grid.innerHTML += `
                     <div id="item-card-${item.id}" onclick="addToCart('${item.id}', '${safeName}', ${item.price}, ${item.stock})" class="bg-white border border-gray-200 rounded-xl p-2 shadow-sm flex flex-col justify-between cursor-pointer scale-active ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}">
                         <div>
@@ -738,7 +738,6 @@
             renderCart(); 
         }
 
-        // Tối ưu hiệu ứng giật nảy + Đổi viền xanh báo hiệu đã chọn
         function addToCart(id, name, price, stock) {
             const card = document.getElementById('item-card-' + id);
             if(card) {
@@ -892,9 +891,6 @@
             closePaymentModal();
         }
 
-        // ==========================================
-        // LỊCH SỬ BÁN HÀNG VÀ XUẤT EXCEL
-        // ==========================================
         function renderHistory() {
             const list = document.getElementById('history-list');
             const empty = document.getElementById('history-empty');
@@ -1248,13 +1244,15 @@
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const hasSales = dailySales[dateStr]; 
-                const revenueText = hasSales ? `<div class="text-[9px] md:text-xs text-green-600 font-bold mt-1">${(hasSales.total / 1000)}k</div>` : '';
-                const bgClass = hasSales ? 'bg-green-50 border-green-200 hover:bg-green-100 cursor-pointer shadow-sm' : 'bg-white border-gray-100';
+                const saleData = dailySales[dateStr]; 
+                const isValidSale = saleData && saleData.total > 0;
+                
+                const revenueText = isValidSale ? `<div class="text-[9px] md:text-xs text-green-600 font-bold mt-1">${(saleData.total / 1000)}k</div>` : '';
+                const bgClass = isValidSale ? 'bg-green-50 border-green-200 hover:bg-green-100 shadow-sm' : 'bg-white border-gray-100 hover:bg-gray-50';
                 const isToday = (dateStr === getLocalTodayString()) ? 'ring-2 ring-blue-500' : '';
 
                 grid.innerHTML += `
-                    <div onclick="showDateDetail('${dateStr}')" class="p-1 md:p-2 h-14 md:h-20 border rounded-lg flex flex-col items-center justify-start transition ${bgClass} ${isToday} hover:shadow-md scale-active">
+                    <div onclick="showDateDetail('${dateStr}')" class="p-1 md:p-2 h-14 md:h-20 border rounded-lg flex flex-col items-center justify-start transition cursor-pointer scale-active ${bgClass} ${isToday}">
                         <span class="text-xs md:text-sm font-bold text-gray-700">${day}</span>
                         ${revenueText}
                     </div>
