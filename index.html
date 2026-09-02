@@ -2,7 +2,8 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Thêm viewport-fit=cover để iPhone nhận diện khoảng trống vạch ngang -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Inni Shop - Tạp Hóa Thông Minh</title>
     
     <!-- TÊN HIỂN THỊ DƯỚI ICON TRÊN MÀN HÌNH CHÍNH IPHONE/ANDROID -->
@@ -30,7 +31,9 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
+        
+        /* Tối ưu khoảng trống vạch ngang cho màn hình điện thoại (đặc biệt là iPhone) */
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 8px); }
         
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
         @keyframes fadeIn {
@@ -47,7 +50,6 @@
     <aside class="w-64 bg-inni-blue text-white flex flex-col shadow-xl z-10 hidden md:flex shrink-0">
         <div class="p-6 text-center border-b border-blue-600">
             <h1 class="text-3xl font-bold"><i class="fa-solid fa-store mr-2"></i>Inni Shop</h1>
-            <p class="text-blue-200 text-sm mt-1">Đã kết nối Đám Mây ☁️</p>
         </div>
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
             <button onclick="switchTab('tab-sell')" id="btn-tab-sell" class="w-full flex items-center gap-3 p-3 rounded text-left hover:bg-blue-700 transition bg-blue-800 scale-active">
@@ -80,11 +82,6 @@
 
     <!-- NỘI DUNG CHÍNH -->
     <main class="flex-1 relative overflow-y-auto p-4 md:p-6 pb-24 md:pb-6">
-
-        <!-- TÌNH TRẠNG KẾT NỐI -->
-        <div id="cloud-status" class="absolute top-2 right-4 md:top-4 md:right-8 text-gray-400 flex items-center gap-1 text-xs font-bold transition-colors z-50">
-            <i class="fa-solid fa-cloud-arrow-up"></i> Đang kết nối...
-        </div>
 
         <!-- TAB 1: BÁN HÀNG VÀ GIỎ HÀNG -->
         <section id="tab-sell" class="tab-content animate-fade-in h-full flex flex-col">
@@ -310,7 +307,7 @@
                     <ul id="detail-items-list" class="space-y-2 overflow-y-auto max-h-[300px] text-sm flex-1 mb-4 pr-1"></ul>
                     
                     <div class="mt-auto text-xs text-gray-400 italic text-center">
-                        *Đây là bảng tổng hợp. Để sửa hoặc xóa, vui lòng qua tab "Lịch Sử Bán".
+                        *Đây là bảng tổng hợp. Để hoàn hàng, vui lòng qua tab "Lịch Sử Bán" để hủy nguyên hóa đơn.
                     </div>
                 </div>
             </div>
@@ -318,31 +315,33 @@
     </main>
 
     <!-- THANH MENU ĐIỀU HƯỚNG ĐIỆN THOẠI -->
-    <nav class="fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-between pb-safe pt-1 z-40 md:hidden shadow-[0_-10px_20px_rgba(0,0,0,0.05)] px-1">
-        <button onclick="switchTab('tab-sell')" id="btn-mobile-tab-sell" class="flex flex-col items-center p-2 text-inni-blue font-bold flex-1 scale-active">
+    <!-- Thêm pt-2 và pb-safe để căn giữa và tránh vạch ngang iPhone -->
+    <nav class="fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-between pt-2 pb-safe z-40 md:hidden shadow-[0_-10px_20px_rgba(0,0,0,0.05)] px-1">
+        <button onclick="switchTab('tab-sell')" id="btn-mobile-tab-sell" class="flex flex-col items-center px-1 text-inni-blue font-bold flex-1 scale-active">
             <i class="fa-solid fa-cash-register text-[18px] mb-1"></i>
             <span class="text-[9px] whitespace-nowrap">Bán Hàng</span>
         </button>
-        <button onclick="switchTab('tab-history')" id="btn-mobile-tab-history" class="flex flex-col items-center p-2 text-gray-400 hover:text-inni-blue transition flex-1 scale-active">
+        <button onclick="switchTab('tab-history')" id="btn-mobile-tab-history" class="flex flex-col items-center px-1 text-gray-400 hover:text-inni-blue transition flex-1 scale-active">
             <i class="fa-solid fa-receipt text-[18px] mb-1"></i>
             <span class="text-[9px] whitespace-nowrap">Lịch Sử</span>
         </button>
-        <button onclick="switchTab('tab-inventory')" id="btn-mobile-tab-inventory" class="flex flex-col items-center p-2 text-gray-400 hover:text-inni-blue transition flex-1 scale-active">
+        <button onclick="switchTab('tab-inventory')" id="btn-mobile-tab-inventory" class="flex flex-col items-center px-1 text-gray-400 hover:text-inni-blue transition flex-1 scale-active">
             <i class="fa-solid fa-boxes-stacked text-[18px] mb-1"></i>
             <span class="text-[9px] whitespace-nowrap">Kho</span>
         </button>
-        <button onclick="switchTab('tab-add')" id="btn-mobile-tab-add" class="flex flex-col items-center p-2 text-gray-400 hover:text-inni-blue transition flex-1 scale-active">
+        <button onclick="switchTab('tab-add')" id="btn-mobile-tab-add" class="flex flex-col items-center px-1 text-gray-400 hover:text-inni-blue transition flex-1 scale-active">
             <i class="fa-solid fa-circle-plus text-[18px] mb-1"></i>
             <span class="text-[9px] whitespace-nowrap">Thêm</span>
         </button>
-        <button onclick="switchTab('tab-stats')" id="btn-mobile-tab-stats" class="flex flex-col items-center p-2 text-gray-400 hover:text-inni-blue transition flex-1 scale-active">
+        <button onclick="switchTab('tab-stats')" id="btn-mobile-tab-stats" class="flex flex-col items-center px-1 text-gray-400 hover:text-inni-blue transition flex-1 scale-active">
             <i class="fa-solid fa-chart-pie text-[18px] mb-1"></i>
             <span class="text-[9px] whitespace-nowrap">Thống Kê</span>
         </button>
-        <button onclick="showComingSoon()" class="flex flex-col items-center p-2 text-gray-400 hover:text-yellow-600 transition relative flex-1 scale-active">
+        <!-- Nút Pha chế -->
+        <button onclick="showComingSoon()" class="flex flex-col items-center px-1 text-gray-400 hover:text-yellow-600 transition relative flex-1 scale-active">
             <i class="fa-solid fa-mug-hot text-[18px] mb-1"></i>
             <span class="text-[9px] whitespace-nowrap">Pha Chế</span>
-            <div class="absolute top-1 right-2 w-2 h-2 bg-yellow-400 rounded-full border border-white"></div>
+            <div class="absolute top-0 right-2 w-2 h-2 bg-yellow-400 rounded-full border border-white"></div>
         </button>
     </nav>
 
@@ -497,8 +496,6 @@
         let currentViewedDate = null;
         let currentCartTotal = 0;
 
-        const cloudStatus = document.getElementById('cloud-status');
-
         function showComingSoon() { document.getElementById('coming-soon-modal').classList.remove('hidden'); }
         function closeComingSoon() { document.getElementById('coming-soon-modal').classList.add('hidden'); }
 
@@ -510,7 +507,6 @@
             inventory.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
             renderInventory();
             renderSellGrid(); 
-            cloudStatus.innerHTML = '<i class="fa-solid fa-cloud text-green-500"></i> <span class="text-green-500">Đã đồng bộ</span>';
         });
 
         db.collection("shop_data").doc("sales").onSnapshot((doc) => {
