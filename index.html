@@ -2,1141 +2,1253 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MELON COFFEE - POS CLOUD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Tạp Hóa Huy Hoàng - Tạp Hóa Thông Minh</title>
     
-    <meta name="theme-color" content="#FF6600">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Melon POS">
+    <meta name="apple-mobile-web-app-title" content="Tạp Hóa Huy Hoàng">
     
-    <link rel="icon" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" sizes="192x192" href="icon.png">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛒</text></svg>">
     
-    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Melon%20Coffee%20POS%22%2C%22short_name%22%3A%22Melon%20POS%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23FFF0E6%22%2C%22theme_color%22%3A%22%23FF6600%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22icon.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
-
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- FIREBASE CLOUD LIBRARIES -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
     <style>
-        :root {
-            --cam-chinh: #FF6600;
-            --cam-dam: #E65C00;
-            --cam-nhat: #FFF0E6;
-            --trang: #FFFFFF;
-            --xam-nhat: #F8F9FA;
-            --xam-text: #777777;
-            --vien: #E5E7EB;
+        .bg-inni-blue { background-color: #1d4ed8; }
+        .text-inni-blue { color: #1d4ed8; }
+        .border-inni-blue { border-color: #1d4ed8; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 12px); }
+        
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        body { background-color: var(--xam-nhat); display: flex; height: 100vh; height: 100dvh; width: 100vw; overflow: hidden; }
-
-        /* --- SIDEBAR MẶC ĐỊNH (DESKTOP) --- */
-        .sidebar { width: 260px; background-color: var(--trang); border-right: 1px solid var(--vien); display: flex; flex-direction: column; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; flex-shrink: 0; box-shadow: 2px 0 15px rgba(0,0,0,0.03); }
-        .sidebar.collapsed { width: 80px; }
-        .sidebar-header { padding: 20px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--vien); height: 80px;}
-        
-        .logo-title { display: flex; align-items: center; gap: 10px; color: var(--cam-chinh); font-size: 1.3em; font-weight: 800; white-space: nowrap; transition: opacity 0.3s; letter-spacing: 0.5px;}
-        .sidebar.collapsed .logo-title { opacity: 0; width: 0; overflow: hidden; }
-        .logo-img { width: 35px; height: 35px; object-fit: contain; flex-shrink: 0; border-radius: 8px;}
-        
-        /* ĐÃ CẬP NHẬT: Thay đổi giao diện nút Toggle sang dùng icon hình ảnh */
-        .custom-toggle { width: 40px; height: 40px; background-color: var(--cam-nhat); border-radius: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; border: none; flex-shrink: 0; overflow: hidden;}
-        .custom-toggle img { width: 24px; height: 24px; object-fit: contain; transition: 0.2s;}
-        .custom-toggle:hover { background-color: #FFE0D0; }
-        .custom-toggle:hover img { transform: scale(1.1); }
-
-        .sidebar-menu { list-style: none; padding: 15px 10px; display: flex; flex-direction: column; gap: 6px; }
-        .sidebar-menu li { padding: 14px 15px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 15px; color: var(--xam-text); font-weight: 600; transition: all 0.2s ease; white-space: nowrap; position: relative;}
-        .sidebar-menu li i { font-size: 1.25em; color: var(--xam-text); min-width: 25px; text-align: center; transition: 0.2s; }
-        .sidebar-menu li:hover { background-color: var(--cam-nhat); color: var(--cam-chinh); }
-        .sidebar-menu li:hover i { color: var(--cam-chinh); }
-        .sidebar-menu li.active { background-color: var(--cam-chinh); color: var(--trang); box-shadow: 0 4px 12px rgba(255, 102, 0, 0.25); }
-        .sidebar-menu li.active i { color: var(--trang); }
-        .sidebar.collapsed .sidebar-menu span { display: none; }
-        
-        .badge { position: absolute; top: 8px; right: 8px; background: #EF4444; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7em; font-weight: bold; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4); }
-
-        /* --- MAIN CONTENT --- */
-        .main-content { flex: 1; padding: 25px 30px; overflow-y: auto; display: flex; flex-direction: column; position: relative; height: 100%; width: 100%; -webkit-overflow-scrolling: touch; }
-        .tab-pane { display: none; animation: fadeIn 0.3s ease; flex: 1; flex-direction: column; height: 100%; }
-        .tab-pane.active { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .header-top, .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; flex-shrink: 0; }
-        h1 { color: #111827; font-size: 1.6em; display: flex; align-items: center; gap: 10px; margin: 0; font-weight: 800; letter-spacing: -0.5px;}
-        h1 i { color: var(--cam-chinh); }
-
-        .btn-kitchen-top { background: white; border: 1px solid var(--vien); color: var(--cam-chinh); padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 8px; font-size: 0.95em; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.2s;}
-        .btn-kitchen-top:hover { border-color: var(--cam-chinh); box-shadow: 0 4px 12px rgba(255,102,0,0.1); }
-        .category-title { grid-column: 1 / -1; color: #4B5563; border-bottom: 2px solid var(--vien); padding-bottom: 8px; margin: 15px 0 10px 0; font-size: 1.05em; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;}
-
-        /* --- BỐ CỤC POS --- */
-        .pos-layout { display: flex; gap: 20px; flex: 1; overflow: hidden; height: calc(100% - 50px); }
-        .pos-products { flex: 7; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 15px; align-content: flex-start; padding-bottom: 30px; -webkit-overflow-scrolling: touch;}
-        .pos-cart { flex: 3; background: var(--trang); border-radius: 16px; padding: 20px; border: 1px solid var(--vien); display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03); min-width: 320px; height: 100%; }
-        
-        .product-card { background: var(--trang); border: 1px solid var(--vien); border-radius: 16px; padding: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.02);}
-        .product-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(255,102,0,0.1); border-color: var(--cam-chinh); }
-        .product-card img { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; margin-bottom: 12px; border: 3px solid var(--cam-nhat); }
-        .product-card h3 { font-size: 1em; color: #1F2937; margin-bottom: 8px; font-weight: 700; line-height: 1.3;}
-        
-        .product-card.sold-out { opacity: 0.6; filter: grayscale(1); background: #F3F4F6; pointer-events: none; }
-        
-        .size-btns { display: flex; gap: 8px; justify-content: center; width: 100%; margin-top: 5px;}
-        .btn-size { flex: 1; padding: 8px 4px; border: 1px solid var(--cam-nhat); background: var(--cam-nhat); color: var(--cam-dam); border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.8em; transition: 0.2s;}
-        .btn-size:hover { background: var(--cam-chinh); color: white; border-color: var(--cam-chinh); }
-        
-        .cashier-input { width: 100%; padding: 12px 15px; border: 1px solid var(--vien); border-radius: 10px; margin-bottom: 15px; outline: none; font-size: 0.95em; background: #F9FAFB; transition: 0.2s;}
-        .cashier-input:focus { border-color: var(--cam-chinh); background: white; box-shadow: 0 0 0 3px rgba(255,102,0,0.1); }
-        .cart-items { flex: 1; overflow-y: auto; border-top: 1px dashed var(--vien); border-bottom: 1px dashed var(--vien); padding: 10px 0; margin-bottom: 15px; }
-        .cart-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.9em; align-items: center; }
-        .cart-total { font-size: 1.3em; font-weight: 800; text-align: right; margin-bottom: 15px; color: #111827; }
-        .btn-thanh-toan { background: var(--cam-chinh); color: white; border: none; padding: 15px; border-radius: 12px; font-size: 1.05em; font-weight: 800; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; flex-shrink: 0; box-shadow: 0 4px 15px rgba(255,102,0,0.3); transition: 0.2s;}
-        .btn-thanh-toan:hover { background: var(--cam-dam); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,102,0,0.4); }
-
-        /* --- QUẢN LÝ MÓN --- */
-        .manage-container { display: flex; flex-direction: column; gap: 20px; max-width: 900px; margin: 0 auto; width: 100%; padding-bottom: 40px;}
-        .form-add, .manage-list { background: var(--trang); padding: 25px; border-radius: 16px; border: 1px solid var(--vien); box-shadow: 0 4px 20px rgba(0,0,0,0.02);}
-        .split-col { display: flex; gap: 15px; }
-        .form-group { margin-bottom: 15px; flex: 1;}
-        .form-group label { display: block; font-weight: 700; margin-bottom: 8px; color: #374151; font-size: 0.9em; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--vien); border-radius: 10px; outline: none; font-size: 0.95em; background: #F9FAFB; transition: 0.2s;}
-        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--cam-chinh); background: white; }
-        .form-group textarea { height: 80px; resize: vertical; }
-        
-        .image-upload-box { border: 2px dashed #D1D5DB; padding: 20px; border-radius: 12px; text-align: center; background: #F9FAFB; position: relative; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;}
-        .image-upload-box:hover { border-color: var(--cam-chinh); background: var(--cam-nhat); }
-        .image-upload-box input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-        .img-preview-wrapper { width: 120px; height: 120px; border-radius: 10px; overflow: hidden; display: none; border: 2px solid var(--cam-chinh); box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
-        .img-preview-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-
-        .manage-item { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--vien); gap: 15px; }
-        .manage-info { display: flex; align-items: center; gap: 15px; flex: 1; }
-        .manage-info img { width: 55px; height: 55px; border-radius: 10px; object-fit: cover; border: 1px solid var(--vien);}
-        
-        .btn-action { padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; font-size: 0.85em; transition: 0.2s;}
-        .btn-edit { background: #E0F2FE; color: #0369A1; }
-        .btn-edit:hover { background: #BAE6FD; }
-        .btn-delete { background: #FEE2E2; color: #B91C1C; }
-        .btn-delete:hover { background: #FECACA; }
-        .btn-excel { background: #10B981; color: white; font-size: 0.95em; padding: 12px 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);}
-        .btn-excel:hover { background: #059669; transform: translateY(-2px);}
-
-        .toggle-checkbox { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85em; font-weight: 600; color: #4B5563; padding: 6px 10px; background: #F3F4F6; border-radius: 8px; transition: 0.2s;}
-        .toggle-checkbox:hover { background: #E5E7EB; }
-        .toggle-checkbox input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--cam-chinh); }
-
-        /* --- LỊCH SỬ & THỐNG KÊ --- */
-        .table-container { background: white; border-radius: 16px; border: 1px solid var(--vien); flex: 1; overflow: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.02);}
-        table { width: 100%; border-collapse: collapse; min-width: 700px; }
-        th, td { padding: 15px 15px; text-align: left; vertical-align: middle; font-size: 0.95em; border-bottom: 1px solid var(--vien);}
-        th { background: #F9FAFB; color: #374151; position: sticky; top: 0; z-index: 10; font-weight: 700; text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.5px;}
-        tr:nth-child(even) { background-color: #FAFAFA; }
-        .history-row { cursor: pointer; transition: 0.2s;}
-        .history-row:hover { background-color: var(--cam-nhat); }
-        .bill-link { color: var(--cam-chinh); font-weight: 800; background: var(--cam-nhat); padding: 4px 8px; border-radius: 6px;}
-
-        .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding-bottom: 30px;}
-        .recipe-card { background: var(--trang); padding: 15px; text-align: center; border-radius: 16px; border: 1px solid var(--vien); cursor: pointer; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.02);}
-        .recipe-card:hover { border-color: var(--cam-chinh); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(255,102,0,0.1);}
-        .recipe-card img { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; margin-bottom: 10px;}
-
-        .stats-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-box { background: white; padding: 25px 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; border: 1px solid var(--vien);}
-        .stat-box::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; background: var(--cam-chinh); }
-        .stat-box:nth-child(4)::before { background: #10B981; } 
-        .stat-box h3 { color: #6B7280; font-size: 0.85em; margin-bottom: 8px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;}
-        .stat-box .val { color: #111827; font-size: 1.8em; font-weight: 800; }
-        .stat-box i.bg-icon { position: absolute; right: 10px; bottom: -15px; font-size: 5em; color: rgba(255, 102, 0, 0.04); transform: rotate(-15deg); }
-
-        .month-picker-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: white; padding: 12px 20px; border-radius: 12px; border: 1px solid var(--vien); width: fit-content; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
-        .month-picker-container select { padding: 8px 12px; border: 1px solid var(--vien); border-radius: 8px; font-weight: 700; color: var(--cam-chinh); background: #F9FAFB; outline: none; cursor: pointer;}
-        
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; background: white; padding: 20px; border-radius: 16px; border: 1px solid var(--vien); box-shadow: 0 4px 20px rgba(0,0,0,0.02);}
-        .cal-cell { border: 1px solid var(--vien); border-radius: 10px; padding: 10px; min-height: 80px; display: flex; flex-direction: column; justify-content: space-between; background: #FAFAFA; transition: 0.2s; }
-        .cal-cell:hover { background: white; border-color: #D1D5DB; }
-        .cal-cell.has-data { background: var(--cam-nhat); border-color: #FDBA74; }
-        .cal-cell.today { border: 2px solid var(--cam-chinh); background: #FFF7ED; } 
-        .cal-date { font-size: 0.85em; color: #6B7280; font-weight: 700; }
-        .cal-rev { color: var(--cam-chinh); font-weight: 800; font-size: 0.9em; text-align: right;}
-
-        /* --- MODAL CHUNG --- */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(17, 24, 39, 0.7); z-index: 2000; justify-content: center; align-items: center; padding: 15px; backdrop-filter: blur(4px); }
-        .modal-content { background: #fff; width: 550px; max-width: 100%; max-height: 90vh; border-radius: 20px; display: flex; overflow-y: auto; position: relative; flex-direction: column; padding: 30px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);}
-        @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        
-        .close-btn { position: absolute; top: 15px; right: 15px; font-size: 1.2em; cursor: pointer; color: #6B7280; background: #F3F4F6; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; z-index: 10; transition: 0.2s;}
-        .close-btn:hover { background: #E5E7EB; color: #111827; }
-        
-        #preview-bill-modal .modal-content { width: 420px; background: #F9FAFB; padding: 25px;}
-        .receipt-paper { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; font-family: "Courier New", Courier, monospace; font-size: 14px; color: #000; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #E5E7EB;}
-        .preview-actions { display: flex; gap: 12px; }
-        .btn-preview-in, .btn-preview-sua { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 1.05em; color: white; transition: 0.2s;}
-        .btn-preview-in { background: #1F2937; }
-        .btn-preview-in:hover { background: #111827; transform: translateY(-2px);}
-        .btn-preview-sua { background: var(--cam-chinh); }
-        .btn-preview-sua:hover { background: var(--cam-dam); transform: translateY(-2px);}
-
-        #edit-bill-modal .modal-content { width: 550px; }
-        .edit-row { display: flex; align-items: center; justify-content: space-between; background: white; padding: 12px 15px; margin-bottom: 10px; border-radius: 10px; border: 1px solid var(--vien); box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
-        .qty-controls { display: flex; align-items: center; gap: 10px; }
-        .qty-btn { width: 30px; height: 30px; border: none; background: var(--cam-chinh); color: white; border-radius: 8px; cursor: pointer; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 1.1em;}
-        .add-new-item-box { border: 2px dashed #D1D5DB; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; align-items: center; background: #F9FAFB;}
-        .add-new-item-box select { padding: 10px; border: 1px solid #D1D5DB; border-radius: 8px; flex: 1; outline: none; font-weight: 600;}
-
-        #kitchen-modal .modal-content { width: 500px; }
-        .kitchen-order { border: 2px solid var(--cam-nhat); border-radius: 12px; padding: 15px; margin-bottom: 15px; background: #FFF7ED; box-shadow: 0 4px 6px rgba(255,102,0,0.05);}
-        .kitchen-item { font-size: 1.05em; padding: 8px 0; border-bottom: 1px dashed #E5E7EB; color: #1F2937; font-weight: 500;}
-        .btn-done { background: #10B981; color: white; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: 800; margin-top: 12px; cursor: pointer; font-size: 1.05em; transition: 0.2s;}
-        .btn-done:hover { background: #059669; transform: translateY(-2px);}
-
-        #recipe-modal .modal-content { flex-direction: row; width: 650px; padding: 0; overflow: hidden;}
-        .modal-img { flex: 4; background: var(--cam-nhat); display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .modal-img img { width: 100%; max-width: 180px; border-radius: 12px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); border: 4px solid white;}
-        .modal-info { flex: 6; padding: 30px; overflow-y: auto; }
-        .recipe-steps { margin-top: 15px; list-style-type: decimal; padding-left: 20px; color: #4B5563; line-height: 1.6; font-size: 0.95em;}
-
-        #toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: flex; flex-direction: column; gap: 15px; }
-        .toast { background: var(--cam-chinh); color: white; padding: 15px 25px; border-radius: 12px; display: flex; align-items: center; gap: 15px; cursor: pointer; box-shadow: 0 10px 25px rgba(255, 102, 0, 0.4); animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);}
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0;} to { transform: translateX(0); opacity: 1;} }
-
-        #print-section { display: none; }
-
-        /* ========================================================== */
-        /* MOBILE & TABLET OPTIMIZATION (ĐIỆN THOẠI & IPAD)           */
-        /* ========================================================== */
-        @media (max-width: 850px) {
-            body { flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
-            
-            .sidebar { 
-                position: fixed; bottom: 0; left: 0; width: 100% !important; 
-                height: calc(75px + env(safe-area-inset-bottom)); 
-                padding-bottom: calc(15px + env(safe-area-inset-bottom)); 
-                flex-direction: row; border-top: 1px solid var(--vien); border-right: none; 
-                z-index: 999; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); box-shadow: 0 -5px 20px rgba(0,0,0,0.06);
-            }
-            .sidebar-header { display: none !important; } 
-            .sidebar-menu { 
-                flex-direction: row; padding: 0 5px; width: 100%; justify-content: space-around; align-items: center; height: 60px;
-            }
-            .sidebar-menu li { 
-                flex: 1; flex-direction: column; gap: 4px; padding: 6px 0; 
-                background: transparent !important; color: #9CA3AF; align-items: center; justify-content: center;
-                text-align: center; border-radius: 0; box-shadow: none !important;
-            }
-            .sidebar-menu li i { font-size: 1.4em; min-width: auto; color: inherit; }
-            .sidebar-menu li.active { color: var(--cam-chinh) !important; background: transparent !important; }
-            .sidebar-menu li.active i { color: var(--cam-chinh) !important; }
-            .sidebar-menu li span { display: block !important; font-size: 0.65em; font-weight: 700; white-space: nowrap; color: inherit; letter-spacing: 0.2px;}
-            
-            .badge { top: 0px; right: calc(50% - 22px); width: 18px; height: 18px; font-size: 0.6em; padding: 0; display: flex !important; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid white;}
-
-            .main-content { 
-                padding: 15px !important; 
-                height: 100vh !important; height: 100dvh !important; 
-                width: 100vw; overflow-y: auto; -webkit-overflow-scrolling: touch;
-            }
-            
-            .tab-pane::after {
-                content: '';
-                display: block;
-                height: calc(160px + env(safe-area-inset-bottom));
-                min-height: calc(160px + env(safe-area-inset-bottom));
-                width: 100%;
-                flex-shrink: 0;
-            }
-            
-            .pos-layout { flex-direction: column; gap: 15px; height: auto !important; overflow: visible; }
-            .pos-products { max-height: none; overflow: visible; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-            
-            .pos-cart { 
-                position: static; width: 100%; height: auto; min-width: 0; 
-                box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
-                margin-bottom: 20px;
-            }
-            .cart-items { max-height: 250px; }
-
-            .split-col { flex-direction: column; gap: 0; }
-            .manage-item { flex-direction: column; align-items: flex-start; gap: 12px; }
-            .manage-info { width: 100%; }
-            .manage-item > div:last-child { width: 100%; display: grid !important; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-            .manage-item .btn-action { width: 100%; justify-content: center; margin: 0;}
-            .toggle-checkbox { justify-content: center; }
-
-            .stats-summary { grid-template-columns: 1fr 1fr; gap: 12px; }
-            .stat-box { padding: 15px; }
-            .stat-box .val { font-size: 1.4em; }
-            .month-picker-container { width: 100%; justify-content: space-between; }
-            
-            .manage-container, .table-container, .recipe-grid, .calendar-grid {
-                margin-bottom: calc(160px + env(safe-area-inset-bottom)) !important;
-            }
-            
-            .modal { align-items: center; padding: 15px; }
-            .modal-content { width: 100% !important; max-height: 85vh; border-radius: 16px; padding: 20px !important; }
-            #recipe-modal .modal-content { flex-direction: column; width: 100% !important; }
-            .modal-img { padding: 15px; flex: none; border-radius: 16px 16px 0 0;}
-            .modal-img img { max-width: 130px; }
-            
-            #toast-container { bottom: calc(95px + env(safe-area-inset-bottom)); left: 15px; right: 15px; }
-        }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
+        .scale-active:active { transform: scale(0.95); transition: transform 0.1s; }
 
         @media print {
-            @page { margin: 0; }
-            body { background: white; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
-            .sidebar, .main-content, .modal, #toast-container { display: none !important; }
-            #print-section { display: block !important; position: static; width: 100%; color: black; font-size: 14px; padding: 5px; }
-            .thermal-print-wrapper { width: 100%; margin: 0 auto; }
-            .thermal-print-wrapper p { margin: 2px 0; }
+            body * { visibility: hidden; }
+            #printable-bill, #printable-bill * { visibility: visible; }
+            #printable-bill { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 10px; background: white; box-shadow: none; }
+            .modal-overlay { background: transparent !important; }
+            #bill-detail-modal { box-shadow: none; border: none; }
+            button { display: none !important; }
         }
     </style>
 </head>
-<body>
+<body class="bg-gray-100 font-sans text-gray-800 flex flex-col md:flex-row h-[100dvh] overflow-hidden">
 
-    <div id="print-section"></div>
-
-    <!-- SIDEBAR -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-title">
-                <img src="icon.png" alt="Melon Coffee" class="logo-img">
-                <span>MELON COFFEE</span>
-            </div>
-            <button class="custom-toggle" onclick="window.toggleSidebar()">
-                <img src="icon.png" alt="Menu" style="width: 24px; height: 24px; object-fit: contain;">
+    <!-- SIDEBAR CHO MÁY TÍNH -->
+    <aside class="w-64 bg-inni-blue text-white flex flex-col shadow-xl z-10 hidden md:flex shrink-0">
+        <div class="p-6 text-center border-b border-blue-600 shrink-0">
+            <h1 class="text-3xl font-bold"><i class="fa-solid fa-store mr-2"></i>Tạp Hóa Huy Hoàng</h1>
+        </div>
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <button onclick="switchTab('tab-sell')" id="btn-tab-sell" class="w-full flex items-center gap-3 p-3 rounded text-left hover:bg-blue-700 transition bg-blue-800 scale-active">
+                <i class="fa-solid fa-cash-register text-xl w-6 text-center"></i> Bán Hàng
             </button>
-        </div>
-        <ul class="sidebar-menu">
-            <li class="active" onclick="window.switchTab('menu', this)"><i class="fa-solid fa-cash-register"></i><span>Bán Hàng</span></li>
-            <li onclick="window.openKitchenModal()">
-                <i class="fa-solid fa-bell"></i><span>Pha Chế</span>
-                <span class="badge" id="sidebar-badge">0</span>
-            </li>
-            <li onclick="window.switchTab('history', this)"><i class="fa-solid fa-receipt"></i><span>Hóa Đơn</span></li>
-            <li onclick="window.switchTab('recipe', this)"><i class="fa-solid fa-blender"></i><span>Công Thức</span></li>
-            <li onclick="window.switchTab('stats', this)"><i class="fa-solid fa-chart-pie"></i><span>Thống Kê</span></li>
-            <li onclick="window.switchTab('manage', this)"><i class="fa-solid fa-square-plus"></i><span>Quản Lý</span></li>
-        </ul>
-    </div>
+            <button onclick="switchTab('tab-history')" id="btn-tab-history" class="w-full flex items-center gap-3 p-3 rounded text-left hover:bg-blue-700 transition scale-active">
+                <i class="fa-solid fa-receipt text-xl w-6 text-center"></i> Lịch Sử Bán
+            </button>
+            <button onclick="switchTab('tab-inventory')" id="btn-tab-inventory" class="w-full flex items-center gap-3 p-3 rounded text-left hover:bg-blue-700 transition scale-active">
+                <i class="fa-solid fa-boxes-stacked text-xl w-6 text-center"></i> Kho Hàng
+            </button>
+            <button onclick="switchTab('tab-add')" id="btn-tab-add" class="w-full flex items-center gap-3 p-3 rounded text-left hover:bg-blue-700 transition scale-active">
+                <i class="fa-solid fa-circle-plus text-xl w-6 text-center"></i> Thêm Mới
+            </button>
+            <button onclick="switchTab('tab-stats')" id="btn-tab-stats" class="w-full flex items-center gap-3 p-3 rounded text-left hover:bg-blue-700 transition scale-active">
+                <i class="fa-solid fa-chart-pie text-xl w-6 text-center"></i> Thống Kê
+            </button>
+        </nav>
+    </aside>
 
-    <!-- MAIN CONTENT -->
-    <div class="main-content" id="main-scroll">
+    <!-- NỘI DUNG CHÍNH -->
+    <main class="flex-1 relative overflow-y-auto p-4 md:p-6 pb-32 md:pb-6">
 
-        <!-- 1. BÁN HÀNG -->
-        <div id="pane-menu" class="tab-pane active">
-            <div class="header-top">
-                <h1><i class="fa-solid fa-store"></i> POS Thu Ngân</h1>
-                <button class="btn-kitchen-top" onclick="window.openKitchenModal()">
-                    <i class="fa-regular fa-bell"></i> Pha Chế (<span id="top-badge">0</span>)
-                </button>
-            </div>
-            <div class="pos-layout">
-                <div class="pos-products" id="render-products"></div>
-                <div class="pos-cart">
-                    <input type="text" class="cashier-input" id="cashier-name" placeholder="Tên thu ngân (VD: Yến Nhi)">
-                    <h3 style="color: var(--cam-chinh); margin-bottom: 10px; font-size: 1.1em; font-weight: 800;">Giỏ hàng hiện tại</h3>
-                    <div class="cart-items" id="render-cart"></div>
-                    <div class="cart-total">Tổng: <span id="cart-total-val" style="color: var(--cam-chinh);">0đ</span></div>
-                    <button class="btn-thanh-toan" onclick="window.checkout()"><i class="fa-solid fa-print"></i> THANH TOÁN QUẦY</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. QUẢN LÝ MÓN -->
-        <div id="pane-manage" class="tab-pane">
-            <div class="header-top"><h1><i class="fa-solid fa-square-plus"></i> Quản Lý Món Nước</h1></div>
-            <div class="manage-container">
-                <div class="form-add">
-                    <h3 style="margin-bottom: 20px; color: var(--cam-chinh); font-size: 1.2em; border-bottom: 1px dashed var(--vien); padding-bottom: 10px;"><i class="fa-solid fa-plus-circle"></i> Thêm Món Mới</h3>
-                    
-                    <div class="form-group">
-                        <label>Hình Ảnh Nước</label>
-                        <div class="image-upload-box">
-                            <input type="file" id="add-image-file" accept="image/*" onchange="window.previewImageFile(event)">
-                            <div class="upload-placeholder" id="upload-text">
-                                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.5em; color: var(--cam-chinh); margin-bottom: 10px; display: block;"></i>
-                                <span style="color: #6B7280;"><b>Nhấn vào đây</b> để tải ảnh lên<br>Hoặc bấm <b>Ctrl + V</b> để dán ảnh.</span>
-                            </div>
-                            <div class="img-preview-wrapper" id="img-preview-wrapper">
-                                <img id="img-preview" src="">
-                            </div>
+        <!-- TAB 1: BÁN HÀNG VÀ GIỎ HÀNG -->
+        <section id="tab-sell" class="tab-content animate-fade-in md:h-full flex flex-col">
+            <h2 class="text-2xl font-bold mb-4 text-inni-blue"><i class="fa-solid fa-cash-register mr-2"></i>Bán Hàng</h2>
+            
+            <div class="flex flex-col lg:flex-row gap-6 flex-1 lg:overflow-hidden">
+                <div class="lg:w-2/3 flex flex-col lg:h-full bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                    <div class="flex flex-col sm:flex-row gap-3 mb-4 shrink-0">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-search absolute left-3 top-3 text-gray-400"></i>
+                            <input type="text" id="sell-search-name" oninput="renderSellGrid()" placeholder="Nhập tên hàng..." class="w-full border border-gray-300 p-2 pl-10 rounded focus:outline-none focus:border-inni-blue bg-gray-50">
                         </div>
-                        <input type="hidden" id="add-image-base64" value="">
-                    </div>
-                    <div class="form-group">
-                        <label>Phân loại nhóm</label>
-                        <select id="add-category">
-                            <option value="sinhto">Sinh Tố & Nước Ép</option>
-                            <option value="tra">Các Loại Trà</option>
-                            <option value="cafe">Cà Phê</option>
-                            <option value="khac">Khác</option>
+                        <select id="sell-search-cat" onchange="renderSellGrid()" class="border border-gray-300 p-2 rounded focus:outline-none focus:border-inni-blue bg-gray-50 shrink-0">
+                            <option value="all">Tất cả phân loại</option>
+                            <option value="Gia vị & Nước chấm">Gia vị & Nước chấm</option>
+                            <option value="Mì & Đồ ăn liền">Mì & Đồ ăn liền</option>
+                            <option value="Snack & Bim bim">Snack & Bim bim</option>
+                            <option value="Bánh kẹo & Socola">Bánh kẹo & Socola</option>
+                            <option value="Sữa & Chế phẩm sữa">Sữa & Chế phẩm sữa</option>
+                            <option value="Trà & Cà phê">Trà & Cà phê</option>
+                            <option value="Nước giải khát & Nước lọc">Nước giải khát & Nước lọc</option>
+                            <option value="Bia & Rượu">Bia & Rượu</option>
+                            <option value="Kem & Đông lạnh">Kem & Đông lạnh</option>
+                            <option value="Đồ khô & Đóng gói">Đồ khô & Đóng gói</option>
+                            <option value="Thuốc lá & Phụ kiện">Thuốc lá & Phụ kiện</option>
+                            <option value="Chăm sóc cá nhân">Chăm sóc cá nhân</option>
+                            <option value="Vệ sinh nhà cửa">Vệ sinh nhà cửa</option>
+                            <option value="Đồ dùng gia đình & Tiện ích">Đồ dùng gia đình & Tiện ích</option>
+                            <option value="Khác">Khác</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Tên món nước</label>
-                        <input type="text" id="add-name" placeholder="VD: Nước Ép Dưa Hấu">
-                    </div>
-                    <div class="split-col">
-                        <div class="form-group">
-                            <label>Giá Size S (VNĐ)</label>
-                            <input type="text" inputmode="numeric" id="add-price-s" placeholder="30,000" oninput="window.formatCurrencyInput(this)">
-                        </div>
-                        <div class="form-group">
-                            <label>Giá Size L (VNĐ)</label>
-                            <input type="text" inputmode="numeric" id="add-price-l" placeholder="40,000" oninput="window.formatCurrencyInput(this)">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Công thức pha chế (Mỗi bước 1 dòng)</label>
-                        <textarea id="add-recipe" placeholder="Bước 1: Chuẩn bị...&#10;Bước 2: Ép lấy nước..."></textarea>
-                    </div>
-                    <button class="btn-thanh-toan" onclick="window.saveNewProduct()"><i class="fa-solid fa-check"></i> LƯU MÓN MỚI</button>
+
+                    <div id="sell-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 overflow-y-auto flex-1 content-start pr-1 pb-4 max-h-[60vh] lg:max-h-full"></div>
+                    <div id="sell-no-result" class="hidden text-center p-8 text-gray-400 italic">Không tìm thấy sản phẩm!</div>
                 </div>
 
-                <div class="manage-list">
-                    <h3 style="margin-bottom: 20px; font-size: 1.2em; color: #1F2937; border-bottom: 1px dashed var(--vien); padding-bottom: 10px;"><i class="fa-solid fa-list-ul"></i> Danh sách món hiện tại</h3>
-                    <div id="render-manage-items"></div>
+                <div class="lg:w-1/3 flex flex-col bg-white rounded-xl shadow-sm border-t-4 border-green-500 p-4 h-[450px] lg:h-full shrink-0">
+                    <h3 class="font-bold text-lg text-green-600 mb-3 border-b pb-2"><i class="fa-solid fa-cart-shopping mr-2"></i>Giỏ Hàng</h3>
+                    
+                    <div class="mb-3 shrink-0">
+                        <label class="text-xs font-bold text-gray-500">Tên Thu Ngân:</label>
+                        <input type="text" id="seller-name" placeholder="Ví dụ: Nhi, Tuấn..." value="Chủ Quán" class="w-full border-b border-gray-300 py-1 focus:outline-none focus:border-green-500 font-bold text-inni-blue">
+                    </div>
+
+                    <ul id="cart-list" class="flex-1 overflow-y-auto space-y-2 pr-1 mb-4">
+                        <li class="text-center text-gray-400 text-sm italic mt-10">Giỏ hàng trống</li>
+                    </ul>
+
+                    <div class="shrink-0 border-t pt-3">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="font-bold text-gray-600">Tổng Tiền:</span>
+                            <span id="cart-total" class="font-bold text-2xl text-red-500">0 đ</span>
+                        </div>
+                        <button onclick="openPaymentModal()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow-md transition scale-active flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-check-double"></i> Xác Nhận Bán
+                        </button>
+                    </div>
                 </div>
             </div>
+        </section>
+
+        <!-- TAB LỊCH SỬ BÁN -->
+        <section id="tab-history" class="tab-content hidden animate-fade-in md:h-full flex flex-col">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+                <h2 class="text-2xl font-bold text-inni-blue"><i class="fa-solid fa-receipt mr-2"></i>Lịch Sử Giao Dịch</h2>
+                <button onclick="exportToCSV()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded shadow transition scale-active flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-file-excel"></i> Xuất Excel (CSV)
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex-1 overflow-hidden flex flex-col min-h-[500px] lg:min-h-0">
+                <div class="overflow-y-auto p-4 flex-1">
+                    <div id="history-list" class="space-y-4"></div>
+                    <div id="history-empty" class="hidden text-center p-10 text-gray-400 italic">Chưa có giao dịch nào được ghi nhận.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB KHO HÀNG -->
+        <section id="tab-inventory" class="tab-content hidden">
+            <div class="bg-white p-4 md:p-6 rounded-xl shadow-sm">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                    <h2 class="text-2xl font-bold text-inni-blue"><i class="fa-solid fa-boxes-packing mr-2"></i>Quản Lý Kho</h2>
+                    <span class="bg-blue-100 text-inni-blue py-1 px-3 rounded-full text-sm font-bold shadow-sm" id="total-inventory-count">Tổng: 0 món</span>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-search absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="search-name" oninput="renderInventory()" placeholder="Nhập tên hàng để tìm..." class="w-full border border-gray-300 p-2 pl-10 rounded focus:outline-none focus:border-inni-blue shadow-inner">
+                    </div>
+                    <div class="relative">
+                        <i class="fa-solid fa-filter absolute left-3 top-3 text-gray-400"></i>
+                        <select id="search-cat" onchange="renderInventory()" class="border border-gray-300 p-2 pl-10 rounded focus:outline-none focus:border-inni-blue bg-white w-full md:w-auto shadow-inner">
+                            <option value="all">Tất cả phân loại</option>
+                            <option value="Gia vị & Nước chấm">Gia vị & Nước chấm</option>
+                            <option value="Mì & Đồ ăn liền">Mì & Đồ ăn liền</option>
+                            <option value="Snack & Bim bim">Snack & Bim bim</option>
+                            <option value="Bánh kẹo & Socola">Bánh kẹo & Socola</option>
+                            <option value="Sữa & Chế phẩm sữa">Sữa & Chế phẩm sữa</option>
+                            <option value="Trà & Cà phê">Trà & Cà phê</option>
+                            <option value="Nước giải khát & Nước lọc">Nước giải khát & Nước lọc</option>
+                            <option value="Bia & Rượu">Bia & Rượu</option>
+                            <option value="Kem & Đông lạnh">Kem & Đông lạnh</option>
+                            <option value="Đồ khô & Đóng gói">Đồ khô & Đóng gói</option>
+                            <option value="Thuốc lá & Phụ kiện">Thuốc lá & Phụ kiện</option>
+                            <option value="Chăm sóc cá nhân">Chăm sóc cá nhân</option>
+                            <option value="Vệ sinh nhà cửa">Vệ sinh nhà cửa</option>
+                            <option value="Đồ dùng gia đình & Tiện ích">Đồ dùng gia đình & Tiện ích</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-lg border border-gray-200">
+                    <table class="w-full text-left border-collapse min-w-[500px]">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-700 text-sm uppercase tracking-wider">
+                                <th class="p-3 border-b w-16 md:w-24">Hình ảnh</th>
+                                <th class="p-3 border-b">Tên Hàng</th>
+                                <th class="p-3 border-b">Giá Bán</th>
+                                <th class="p-3 border-b text-center">Kho</th>
+                                <th class="p-3 border-b text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-list" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                    <div id="no-result-msg" class="hidden text-center p-8 text-gray-500 italic animate-fade-in"><i class="fa-solid fa-box-open text-4xl mb-3 text-gray-300 block"></i> Không tìm thấy mặt hàng nào!</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB THÊM HÀNG MỚI -->
+        <section id="tab-add" class="tab-content hidden">
+            <div class="max-w-3xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-sm border-t-4 border-inni-blue">
+                <h2 class="text-2xl font-bold mb-6 text-inni-blue"><i class="fa-solid fa-cart-plus mr-2"></i>Nhập Hàng Mới</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Tên sản phẩm</label>
+                        <input type="text" id="prod-name" placeholder="VD: Tương ớt Chinsu" class="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-inni-blue focus:ring-1 focus:ring-inni-blue transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Phân loại hàng</label>
+                        <select id="prod-category" class="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-inni-blue focus:ring-1 focus:ring-inni-blue transition bg-white">
+                            <option value="Gia vị & Nước chấm">Gia vị & Nước chấm</option>
+                            <option value="Mì & Đồ ăn liền">Mì & Đồ ăn liền</option>
+                            <option value="Snack & Bim bim">Snack & Bim bim</option>
+                            <option value="Bánh kẹo & Socola">Bánh kẹo & Socola</option>
+                            <option value="Sữa & Chế phẩm sữa">Sữa & Chế phẩm sữa</option>
+                            <option value="Trà & Cà phê">Trà & Cà phê</option>
+                            <option value="Nước giải khát & Nước lọc">Nước giải khát & Nước lọc</option>
+                            <option value="Bia & Rượu">Bia & Rượu</option>
+                            <option value="Kem & Đông lạnh">Kem & Đông lạnh</option>
+                            <option value="Đồ khô & Đóng gói">Đồ khô & Đóng gói</option>
+                            <option value="Thuốc lá & Phụ kiện">Thuốc lá & Phụ kiện</option>
+                            <option value="Chăm sóc cá nhân">Chăm sóc cá nhân</option>
+                            <option value="Vệ sinh nhà cửa">Vệ sinh nhà cửa</option>
+                            <option value="Đồ dùng gia đình & Tiện ích">Đồ dùng gia đình & Tiện ích</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Giá bán lẻ (VNĐ)</label>
+                        <input type="text" id="prod-price-input" oninput="formatCurrencyInput(this)" placeholder="Ví dụ: 15.000" class="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-inni-blue focus:ring-1 focus:ring-inni-blue transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Số lượng nhập kho</label>
+                        <input type="number" id="prod-stock" placeholder="Ví dụ: 50" class="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-inni-blue focus:ring-1 focus:ring-inni-blue transition">
+                    </div>
+                    <div class="md:col-span-2 bg-blue-50 p-4 border border-blue-200 rounded-lg mt-2 relative overflow-hidden group">
+                        <label class="block text-sm font-bold text-gray-700 mb-2"><i class="fa-solid fa-image text-blue-500 mr-2"></i>Ảnh Sản Phẩm</label>
+                        <p class="text-xs text-gray-500 mb-3">Mẹo: Thêm hình ảnh giúp bạn nhận diện nhanh khi chọn vào Giỏ hàng.</p>
+                        <input type="file" id="prod-image" accept="image/*" class="w-full border border-gray-300 p-2 rounded bg-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-inni-blue hover:file:bg-blue-100">
+                    </div>
+                </div>
+                <button onclick="addProduct()" id="btn-add-product" class="mt-6 w-full bg-inni-blue hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-lg shadow-md transition transform active:scale-95 text-lg flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Lưu Món Hàng Lên Đám Mây
+                </button>
+            </div>
+        </section>
+
+        <!-- TAB THỐNG KÊ -->
+        <section id="tab-stats" class="tab-content hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+                <h2 class="text-2xl font-bold text-inni-blue"><i class="fa-solid fa-chart-pie mr-2"></i>Thống Kê Doanh Thu</h2>
+                <button onclick="exportStatsToCSV()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded shadow transition scale-active flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-file-excel"></i> Xuất Báo Cáo Tổng (CSV)
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-white p-5 rounded-xl shadow-sm border-t-4 border-green-500 flex items-center justify-between hover:shadow-md transition">
+                    <div>
+                        <h3 class="text-gray-500 font-bold mb-1 text-sm">Hôm Nay</h3>
+                        <div class="text-xl md:text-2xl font-bold text-green-600" id="rev-1-day">0 đ</div>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center"><i class="fa-solid fa-sack-dollar text-2xl text-green-500"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border-t-4 border-blue-500 flex items-center justify-between hover:shadow-md transition">
+                    <div>
+                        <h3 class="text-gray-500 font-bold mb-1 text-sm">3 Ngày Qua</h3>
+                        <div class="text-xl md:text-2xl font-bold text-blue-600" id="rev-3-days">0 đ</div>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center"><i class="fa-solid fa-wallet text-2xl text-blue-500"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border-t-4 border-purple-500 flex items-center justify-between hover:shadow-md transition">
+                    <div>
+                        <h3 class="text-gray-500 font-bold mb-1 text-sm">1 Tuần Qua</h3>
+                        <div class="text-xl md:text-2xl font-bold text-purple-600" id="rev-7-days">0 đ</div>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center"><i class="fa-solid fa-vault text-2xl text-purple-500"></i></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white p-4 md:p-6 rounded-xl shadow-sm">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+                        <h2 class="text-xl md:text-2xl font-bold text-inni-blue flex items-center gap-2"><i class="fa-regular fa-calendar-days"></i>Lịch Bán Hàng</h2>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <select id="filter-month" onchange="changeCalendarMonth()" class="flex-1 sm:flex-none border border-gray-300 rounded p-2 text-sm font-bold text-gray-700 bg-gray-50 focus:outline-none focus:border-inni-blue cursor-pointer"></select>
+                            <select id="filter-year" onchange="changeCalendarMonth()" class="flex-1 sm:flex-none border border-gray-300 rounded p-2 text-sm font-bold text-gray-700 bg-gray-50 focus:outline-none focus:border-inni-blue cursor-pointer"></select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-7 gap-1 md:gap-2 text-center font-bold text-gray-500 text-xs md:text-sm mb-2 bg-gray-50 py-2 rounded">
+                        <div>CN</div><div>T2</div><div>T3</div><div>T4</div><div>T5</div><div>T6</div><div>T7</div>
+                    </div>
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-1 md:gap-2"></div>
+                </div>
+
+                <div class="lg:col-span-1 bg-white p-4 md:p-6 rounded-xl shadow-sm border-t-4 border-yellow-500 flex flex-col h-full min-h-[400px]">
+                    <h3 class="text-lg font-bold text-yellow-600 border-b pb-2 mb-4"><i class="fa-solid fa-chart-bar mr-2"></i>Tổng số lượng <span id="detail-date" class="text-gray-800">...</span></h3>
+                    
+                    <div class="flex justify-between font-bold text-base mb-4 bg-gray-50 p-3 rounded">
+                        <span>Tổng doanh thu:</span>
+                        <span id="detail-revenue" class="text-green-600 text-xl">0 đ</span>
+                    </div>
+                    
+                    <ul id="detail-items-list" class="space-y-2 overflow-y-auto max-h-[300px] text-sm flex-1 mb-4 pr-1"></ul>
+                    
+                    <div class="mt-auto text-xs text-gray-400 italic text-center">
+                        *Đây là bảng tổng hợp. Để hoàn hàng, vui lòng qua tab "Lịch Sử Bán" để hủy nguyên hóa đơn.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- THANH MENU ĐIỀU HƯỚNG ĐIỆN THOẠI -->
+    <!-- ĐÃ CẬP NHẬT LẠI CÁC NÚT ĐỂ CÓ THỂ XÓA CLASS MÀU XANH KHI KHÔNG ĐƯỢC CHỌN -->
+    <nav class="w-full bg-white border-t border-gray-200 flex justify-between pt-2 pb-safe z-40 md:hidden shadow-[0_-10px_20px_rgba(0,0,0,0.05)] px-1 shrink-0">
+        <button onclick="switchTab('tab-sell')" id="btn-mobile-tab-sell" class="mobile-nav-btn flex flex-col items-center px-1 text-inni-blue font-bold flex-1 scale-active">
+            <i class="fa-solid fa-cash-register text-[18px] mb-1"></i>
+            <span class="text-[9px] whitespace-nowrap mt-1">Bán Hàng</span>
+        </button>
+        <button onclick="switchTab('tab-history')" id="btn-mobile-tab-history" class="mobile-nav-btn flex flex-col items-center px-1 text-gray-400 hover:text-inni-blue transition flex-1 scale-active">
+            <i class="fa-solid fa-receipt text-[18px] mb-1"></i>
+            <span class="text-[9px] whitespace-nowrap mt-1">Lịch Sử</span>
+        </button>
+        <button onclick="switchTab('tab-inventory')" id="btn-mobile-tab-inventory" class="mobile-nav-btn flex flex-col items-center px-1 text-gray-400 hover:text-inni-blue transition flex-1 scale-active">
+            <i class="fa-solid fa-boxes-stacked text-[18px] mb-1"></i>
+            <span class="text-[9px] whitespace-nowrap mt-1">Kho</span>
+        </button>
+        <button onclick="switchTab('tab-add')" id="btn-mobile-tab-add" class="mobile-nav-btn flex flex-col items-center px-1 text-gray-400 hover:text-inni-blue transition flex-1 scale-active">
+            <i class="fa-solid fa-circle-plus text-[18px] mb-1"></i>
+            <span class="text-[9px] whitespace-nowrap mt-1">Thêm Mới</span>
+        </button>
+        <button onclick="switchTab('tab-stats')" id="btn-mobile-tab-stats" class="mobile-nav-btn flex flex-col items-center px-1 text-gray-400 hover:text-inni-blue transition flex-1 scale-active">
+            <i class="fa-solid fa-chart-pie text-[18px] mb-1"></i>
+            <span class="text-[9px] whitespace-nowrap mt-1">Thống Kê</span>
+        </button>
+    </nav>
+
+    <!-- MODAL THANH TOÁN -->
+    <div id="payment-modal" class="fixed inset-0 modal-overlay z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full animate-fade-in flex flex-col">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="font-bold text-lg text-inni-blue"><i class="fa-solid fa-wallet mr-2"></i>Thanh Toán</h3>
+                <button onclick="closePaymentModal()" class="text-gray-400 hover:text-red-500 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="mb-4">
+                <div class="flex justify-between text-gray-600 mb-1">
+                    <span>Tổng hóa đơn:</span>
+                    <span id="payment-total" class="font-bold text-red-500 text-lg">0 đ</span>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Khách đưa (VNĐ):</label>
+                <input type="text" id="customer-paid-input" oninput="formatCurrencyInput(this); calculateChange()" class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:border-green-500 font-bold text-lg" placeholder="Nhập số tiền...">
+            </div>
+
+            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-6">
+                <div class="flex justify-between text-gray-700">
+                    <span class="font-bold">Tiền thừa trả khách:</span>
+                    <span id="payment-change" class="font-bold text-blue-600 text-xl">0 đ</span>
+                </div>
+            </div>
+
+            <button onclick="confirmCheckout()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow-md transition scale-active flex justify-center items-center gap-2">
+                <i class="fa-solid fa-check"></i> Hoàn Tất Bán Hàng
+            </button>
         </div>
+    </div>
 
-        <!-- 3. LỊCH SỬ BILL -->
-        <div id="pane-history" class="tab-pane">
-            <div class="header-actions">
-                <h1><i class="fa-solid fa-receipt"></i> Quản Lý Lịch Sử Bill</h1>
-                <button class="btn-action btn-excel" onclick="window.exportBillHistoryCSV()"><i class="fa-solid fa-file-excel"></i> Xuất CSV Giao Dịch</button>
+    <!-- MODAL CHI TIẾT BILL (GIAO DIỆN MÁY IN NHIỆT) -->
+    <div id="bill-detail-modal" class="fixed inset-0 modal-overlay z-[60] hidden flex items-center justify-center sm:p-4">
+        <div class="bg-white sm:rounded-xl shadow-2xl w-full h-full sm:h-auto sm:max-h-[90vh] max-w-sm overflow-hidden animate-fade-in flex flex-col">
+            
+            <div class="flex justify-between items-center bg-gray-100 px-4 py-3 border-b shrink-0 print-hidden">
+                <h3 class="font-bold text-gray-700"><i class="fa-solid fa-receipt mr-2"></i>Chi tiết hóa đơn</h3>
+                <button onclick="closeBillModal()" class="text-gray-400 hover:text-red-500 text-xl w-8 h-8 flex justify-center items-center rounded-full hover:bg-gray-200 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="table-container">
-                <table>
+            
+            <div class="flex-1 overflow-y-auto bg-white p-5" id="printable-bill">
+                <div class="text-center mb-4">
+                    <h2 class="text-2xl font-black text-gray-800 uppercase">TẠP HÓA HUY HOÀNG</h2>
+                    <p class="text-xs text-gray-500 mt-1">HÓA ĐƠN BÁN LẺ</p>
+                </div>
+                
+                <div class="border-b-2 border-dashed border-gray-300 pb-3 mb-3 text-sm text-gray-600 space-y-1">
+                    <div class="flex justify-between"><span>Ngày:</span> <span id="bill-detail-date" class="font-semibold text-gray-800">...</span></div>
+                    <div class="flex justify-between"><span>Mã đơn:</span> <span id="bill-detail-id" class="font-semibold text-gray-800">...</span></div>
+                    <div class="flex justify-between"><span>Thu ngân:</span> <span id="bill-detail-seller" class="font-semibold text-gray-800">...</span></div>
+                </div>
+                
+                <table class="w-full text-sm mb-4">
                     <thead>
-                        <tr>
-                            <th>Mã Bill</th>
-                            <th>Ngày Giờ</th>
-                            <th>Thu Ngân</th>
-                            <th>Chi Tiết Món</th>
-                            <th>Tổng Tiền</th>
-                            <th style="text-align: center;">Thao Tác</th>
+                        <tr class="border-b border-gray-200 text-gray-500 text-xs">
+                            <th class="text-left pb-2 font-medium w-3/5">Tên món</th>
+                            <th class="text-center pb-2 font-medium w-1/5">SL</th>
+                            <th class="text-right pb-2 font-medium w-1/5">T.Tiền</th>
                         </tr>
                     </thead>
-                    <tbody id="render-history"></tbody>
+                    <tbody id="bill-detail-items" class="text-gray-800">
+                    </tbody>
                 </table>
-            </div>
-        </div>
-        
-        <!-- CÔNG THỨC PHA CHẾ -->
-        <div id="pane-recipe" class="tab-pane">
-            <div class="header-top"><h1><i class="fa-solid fa-blender"></i> Sổ Tay Pha Chế</h1></div>
-            <div class="recipe-grid" id="render-recipes"></div>
-        </div>
+                
+                <div class="border-t-2 border-dashed border-gray-300 pt-3 flex justify-between items-center mb-6">
+                    <span class="font-bold text-gray-800 text-lg">TỔNG CỘNG:</span>
+                    <span id="bill-detail-total" class="font-black text-2xl text-red-600">0 đ</span>
+                </div>
 
-        <!-- 4. THỐNG KÊ -->
-        <div id="pane-stats" class="tab-pane">
-            <div class="header-actions">
-                <h1><i class="fa-solid fa-chart-pie"></i> Báo Cáo Doanh Thu</h1>
-                <button class="btn-action btn-excel" onclick="window.exportRevenueStatsCSV()"><i class="fa-solid fa-file-excel"></i> Xuất CSV Báo Cáo</button>
+                <div class="text-center text-xs text-gray-400 italic">Cảm ơn quý khách & Hẹn gặp lại!</div>
             </div>
             
-            <div class="stats-summary">
-                <div class="stat-box">
-                    <i class="fa-solid fa-calendar-day bg-icon"></i>
-                    <h3>Thu Hôm Nay</h3>
-                    <div class="val" id="stat-1d">0đ</div>
-                </div>
-                <div class="stat-box">
-                    <i class="fa-solid fa-calendar-week bg-icon"></i>
-                    <h3>Thu 3 Ngày Qua</h3>
-                    <div class="val" id="stat-3d">0đ</div>
-                </div>
-                <div class="stat-box">
-                    <i class="fa-solid fa-chart-bar bg-icon"></i>
-                    <h3>Thu 1 Tuần Qua</h3>
-                    <div class="val" id="stat-1w">0đ</div>
-                </div>
-                <div class="stat-box">
-                    <i class="fa-solid fa-sack-dollar bg-icon" style="color: rgba(40, 167, 69, 0.1);"></i>
-                    <h3 style="color: #10B981;">TỔNG THÁNG ĐANG CHỌN</h3>
-                    <div class="val" id="stat-month" style="color: #10B981;">0đ</div>
-                </div>
+            <div class="bg-gray-50 p-3 border-t flex gap-2 shrink-0 print-hidden">
+                <button onclick="window.print()" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg shadow-sm transition scale-active flex justify-center items-center gap-2 text-sm">
+                    <i class="fa-solid fa-print"></i> In Bill
+                </button>
+                <button onclick="deleteBill()" class="flex-1 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white font-bold py-3 rounded-lg shadow-sm transition border border-red-200 scale-active flex justify-center items-center gap-2 text-sm">
+                    <i class="fa-solid fa-trash-can"></i> Xóa & Hoàn Kho
+                </button>
             </div>
-
-            <div class="month-picker-container">
-                <label style="font-weight: 700; color: #4B5563;"><i class="fa-regular fa-calendar"></i> Xem lịch sử:</label>
-                <select id="stat-month-select" onchange="window.renderStats()"></select>
-                <select id="stat-year-select" onchange="window.renderStats()"></select>
-            </div>
-            <div class="calendar-grid" id="render-calendar"></div>
+            
+            <input type="hidden" id="bill-delete-date">
+            <input type="hidden" id="bill-delete-index">
         </div>
     </div>
 
-    <!-- MODAL SỬA MÓN (CHUYÊN NGHIỆP GIỮA MÀN HÌNH) -->
-    <div class="modal" id="edit-product-modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="window.closeEditProductModal()">&times;</span>
-            <h2 style="color: var(--cam-chinh); margin-bottom: 20px; font-weight: 800;"><i class="fa-solid fa-pen-to-square"></i> Cập Nhật Thông Tin Món</h2>
-            
-            <input type="hidden" id="modal-edit-product-id">
-            
-            <div class="form-group">
-                <label>Hình Ảnh (Bỏ trống nếu muốn giữ ảnh cũ)</label>
-                <div class="image-upload-box" style="padding: 10px;">
-                    <input type="file" id="modal-edit-image-file" accept="image/*" onchange="window.previewModalImageFile(event)">
-                    <div class="img-preview-wrapper" id="modal-edit-img-preview-wrapper" style="display: block; margin: 0 auto;">
-                        <img id="modal-edit-img-preview" src="">
+    <!-- MODAL CHỈNH SỬA KHO -->
+    <div id="edit-modal" class="fixed inset-0 modal-overlay z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in flex flex-col max-h-full">
+            <div class="p-4 bg-inni-blue text-white flex justify-between items-center shrink-0">
+                <h3 class="font-bold text-lg"><i class="fa-solid fa-pen-to-square mr-2"></i>Sửa Thông Tin</h3>
+                <button onclick="closeEditModal()" class="text-blue-200 hover:text-white transition text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 space-y-4 overflow-y-auto">
+                <input type="hidden" id="edit-index">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">Tên mặt hàng</label>
+                    <input type="text" id="edit-name" class="w-full border border-gray-300 p-2 rounded outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">Phân loại</label>
+                    <select id="edit-category" class="w-full border border-gray-300 p-2 rounded outline-none bg-white">
+                        <option value="Gia vị & Nước chấm">Gia vị & Nước chấm</option>
+                        <option value="Mì & Đồ ăn liền">Mì & Đồ ăn liền</option>
+                        <option value="Snack & Bim bim">Snack & Bim bim</option>
+                        <option value="Bánh kẹo & Socola">Bánh kẹo & Socola</option>
+                        <option value="Sữa & Chế phẩm sữa">Sữa & Chế phẩm sữa</option>
+                        <option value="Trà & Cà phê">Trà & Cà phê</option>
+                        <option value="Nước giải khát & Nước lọc">Nước giải khát & Nước lọc</option>
+                        <option value="Bia & Rượu">Bia & Rượu</option>
+                        <option value="Kem & Đông lạnh">Kem & Đông lạnh</option>
+                        <option value="Đồ khô & Đóng gói">Đồ khô & Đóng gói</option>
+                        <option value="Thuốc lá & Phụ kiện">Thuốc lá & Phụ kiện</option>
+                        <option value="Chăm sóc cá nhân">Chăm sóc cá nhân</option>
+                        <option value="Vệ sinh nhà cửa">Vệ sinh nhà cửa</option>
+                        <option value="Đồ dùng gia đình & Tiện ích">Đồ dùng gia đình & Tiện ích</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-gray-600 mb-1">Giá bán</label>
+                        <input type="text" id="edit-price-input" oninput="formatCurrencyInput(this)" class="w-full border border-gray-300 p-2 rounded outline-none">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-gray-600 mb-1">Tồn kho</label>
+                        <input type="number" id="edit-stock" class="w-full border border-gray-300 p-2 rounded outline-none">
                     </div>
                 </div>
-                <input type="hidden" id="modal-edit-image-base64">
-            </div>
-            <div class="form-group">
-                <label>Phân loại nhóm</label>
-                <select id="modal-edit-category">
-                    <option value="sinhto">Sinh Tố & Nước Ép</option>
-                    <option value="tra">Các Loại Trà</option>
-                    <option value="cafe">Cà Phê</option>
-                    <option value="khac">Khác</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Tên món nước</label>
-                <input type="text" id="modal-edit-name">
-            </div>
-            <div class="split-col">
-                <div class="form-group">
-                    <label>Giá Size S (VNĐ)</label>
-                    <input type="text" inputmode="numeric" id="modal-edit-price-s" oninput="window.formatCurrencyInput(this)">
-                </div>
-                <div class="form-group">
-                    <label>Giá Size L (VNĐ)</label>
-                    <input type="text" inputmode="numeric" id="modal-edit-price-l" oninput="window.formatCurrencyInput(this)">
+                <div class="bg-gray-50 p-3 rounded border border-gray-200">
+                    <label class="block text-xs font-bold text-gray-600 mb-2">Đổi hình ảnh mới (Bỏ trống nếu giữ ảnh cũ)</label>
+                    <input type="file" id="edit-image" accept="image/*" class="w-full text-xs file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-200 file:text-gray-700">
                 </div>
             </div>
-            <div class="form-group">
-                <label>Công thức pha chế</label>
-                <textarea id="modal-edit-recipe"></textarea>
-            </div>
-            
-            <button class="btn-thanh-toan" onclick="window.saveEditedProduct()"><i class="fa-solid fa-floppy-disk"></i> LƯU THAY ĐỔI</button>
-        </div>
-    </div>
-
-    <!-- MODAL BẾP -->
-    <div class="modal" id="kitchen-modal">
-        <div class="modal-content" style="width: 450px;">
-            <span class="close-btn" onclick="window.closeKitchenModal()">&times;</span>
-            <h2 style="color: var(--cam-chinh); margin-bottom: 20px;"><i class="fa-solid fa-bell"></i> ĐƠN CHỜ PHA CHẾ</h2>
-            <div id="kitchen-orders-list"></div>
-        </div>
-    </div>
-
-    <!-- MODAL PREVIEW XEM TRƯỚC BILL -->
-    <div class="modal" id="preview-bill-modal">
-        <div class="modal-content" style="align-items: center;">
-            <span class="close-btn" onclick="window.closePreviewModal()">&times;</span>
-            
-            <div class="receipt-paper" id="preview-receipt-content" style="width: 100%;"></div>
-
-            <div class="preview-actions" style="width: 100%;">
-                <button class="btn-preview-in" onclick="window.printFromPreview()"><i class="fa-solid fa-print"></i> IN BILL</button>
-                <button class="btn-preview-sua" onclick="window.editFromPreview()"><i class="fa-solid fa-pen-to-square"></i> SỬA BILL</button>
+            <div class="p-4 border-t border-gray-100 flex justify-end gap-3 shrink-0">
+                <button onclick="closeEditModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded font-bold transition">Hủy</button>
+                <button onclick="saveEditItem()" id="btn-save-edit" class="px-4 py-2 bg-inni-blue text-white rounded font-bold transition">
+                    <i class="fa-solid fa-check"></i> Cập nhật Cloud
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL SỬA BILL -->
-    <div class="modal" id="edit-bill-modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="window.closeEditBillModal()">&times;</span>
-            <h2 style="color: var(--cam-chinh); margin-bottom: 10px;"><i class="fa-solid fa-pen-to-square"></i> Chỉnh Sửa Bill: <span id="edit-modal-bill-id"></span></h2>
-            <p style="color: #6B7280; font-size: 0.9em; margin-bottom: 20px;">Bạn có thể thay đổi số lượng, xóa món hoặc thêm món mới bị thiếu vào bill này.</p>
-            
-            <div class="add-new-item-box">
-                <select id="edit-add-product-id"></select>
-                <select id="edit-add-size" style="width: 100px;">
-                    <option value="S">Size S</option>
-                    <option value="L">Size L</option>
-                </select>
-                <button class="btn-action btn-excel" style="margin: 0; padding: 10px;" onclick="window.editBillAddNewItem()"><i class="fa-solid fa-plus"></i> Thêm</button>
-            </div>
-            <hr style="border: 0.5px solid #E5E7EB; margin-bottom: 15px;">
-            
-            <div id="edit-modal-items-list" style="max-height: 250px; overflow-y: auto;"></div>
-            <div style="text-align: right; margin-top: 20px; font-size: 1.3em; font-weight: 800; border-top: 2px dashed #D1D5DB; padding-top: 15px;">
-                Tổng Tiền Mới: <span id="edit-modal-total" style="color: var(--cam-chinh);">0đ</span>
-            </div>
-            <button class="btn-thanh-toan" style="margin-top: 20px;" onclick="window.saveEditedBill()"><i class="fa-solid fa-cloud-arrow-up"></i> LƯU LÊN CLOUD</button>
-        </div>
-    </div>
-    
-    <!-- MODAL CÔNG THỨC CHI TIẾT -->
-    <div class="modal" id="recipe-modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="window.closeRecipeModal()">&times;</span>
-            <div class="modal-img"><img id="modal-img-src" src="" alt=""></div>
-            <div class="modal-info">
-                <h2 id="modal-title" style="color: var(--cam-chinh); margin-bottom: 5px; font-weight: 800;">Tên món</h2>
-                <hr style="border:0.5px solid #E5E7EB; margin: 10px 0;">
-                <h3 style="font-size: 1.1em; color: #1F2937;">Cách làm:</h3>
-                <ol class="recipe-steps" id="modal-steps"></ol>
-            </div>
-        </div>
-    </div>
-
-    <div id="toast-container"></div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
+    <script>
+        // ==========================================
+        // 1. CẤU HÌNH FIREBASE CLOUD
+        // ==========================================
         const firebaseConfig = {
-            apiKey: "AIzaSyAGfNuFqBvOetYv90hCQ7JuxGfndhbIV44",
-            authDomain: "melon-coffee.firebaseapp.com",
-            projectId: "melon-coffee",
-            storageBucket: "melon-coffee.firebasestorage.app",
-            messagingSenderId: "808383207341",
-            appId: "1:808383207341:web:cacdcadc904ea2ca23f324",
-            measurementId: "G-M5HBN10S93"
+            apiKey: "AIzaSyDPdxOqQiGA3uhCtctfM17mLdwnIryOYkM",
+            authDomain: "inni-shop.firebaseapp.com",
+            projectId: "inni-shop",
+            storageBucket: "inni-shop.firebasestorage.app",
+            messagingSenderId: "162996670712",
+            appId: "1:162996670712:web:188d90a03ba81759c42b0d",
+            measurementId: "G-6CP67CR75J"
         };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        let inventory = [];
+        let dailySales = {}; 
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let cart = {}; 
+        let currentViewedDate = null;
+        let currentCartTotal = 0;
 
-        const CAT_NAMES = { 'sinhto': '🍹 Sinh Tố & Ép', 'tra': '🍵 Trà', 'cafe': '☕ Cà Phê', 'khac': '🥤 Khác' };
-        
-        let products = [];
-        let cart = [];
-        let bills = [];
-        let pendingOrders = [];
-        let tempEditBill = null; 
-        let currentPreviewBillId = null;
-
-        const formatMoney = (amount) => amount.toLocaleString('vi-VN') + "đ";
-        function getCustomDateString(d) { return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`; }
-        function getCustomTimeString(d) { return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`; }
-
-        window.formatCurrencyInput = function(input) {
-            let value = input.value.replace(/\D/g, '');
-            if (value !== '') {
-                input.value = parseInt(value, 10).toLocaleString('en-US');
-            } else {
+        // Hàm hỗ trợ format tiền tệ khi nhập liệu
+        function formatCurrencyInput(input) {
+            let val = input.value.replace(/\./g, '').replace(/\D/g, ''); // Bỏ dấu chấm và chữ
+            if (val === '') {
                 input.value = '';
+                return;
+            }
+            input.value = parseInt(val).toLocaleString('vi-VN').replace(/,/g, '.');
+        }
+
+        // Lấy giá trị số nguyên từ ô input đã format
+        function getRawNumberFromInput(inputId) {
+            let val = document.getElementById(inputId).value.replace(/\./g, '');
+            return parseInt(val) || 0;
+        }
+
+        function initCalendarSelects() {
+            const monthSelect = document.getElementById('filter-month');
+            const yearSelect = document.getElementById('filter-year');
+            
+            for(let i=0; i<12; i++) {
+                let opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = "Tháng " + (i+1);
+                if(i === currentMonth) opt.selected = true;
+                monthSelect.appendChild(opt);
+            }
+            
+            for(let i=2024; i<=2060; i++) {
+                let opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = "Năm " + i;
+                if(i === currentYear) opt.selected = true;
+                yearSelect.appendChild(opt);
             }
         }
+        initCalendarSelects();
 
-        onSnapshot(collection(db, "melon_products"), (snapshot) => {
-            products = [];
-            snapshot.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
-            renderMenu(); renderManageList(); renderRecipes(); populateEditProductDropdown();
-        });
-
-        onSnapshot(collection(db, "melon_bills"), (snapshot) => {
-            bills = []; pendingOrders = []; 
-            snapshot.forEach(doc => {
-                let b = { id: doc.id, ...doc.data() };
-                bills.push(b);
-                if(b.status === "pending") pendingOrders.push(b); 
-            });
-            bills.sort((a,b) => a.dateObj - b.dateObj);
-            renderHistory(); renderStats(); updateKitchenBadge();
-            if(document.getElementById('kitchen-modal').style.display === 'flex') window.openKitchenModal();
-        });
-
-        function initMonthYearPickers() {
-            const mSelect = document.getElementById('stat-month-select');
-            const ySelect = document.getElementById('stat-year-select');
-            const now = new Date();
-            for(let i=1; i<=12; i++) mSelect.innerHTML += `<option value="${i}">Tháng ${i}</option>`;
-            for(let i=2024; i<=2060; i++) ySelect.innerHTML += `<option value="${i}">Năm ${i}</option>`;
-            mSelect.value = now.getMonth() + 1; ySelect.value = now.getFullYear();
+        function changeCalendarMonth() {
+            currentMonth = parseInt(document.getElementById('filter-month').value);
+            currentYear = parseInt(document.getElementById('filter-year').value);
+            renderCalendar();
         }
 
-        initMonthYearPickers();
-        
-        window.toggleSidebar = function() { document.getElementById('sidebar').classList.toggle('collapsed'); }
-        window.switchTab = function(tabId, el) {
-            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
-            document.getElementById('pane-' + tabId).classList.add('active');
-            if(el) el.classList.add('active');
+        // ==========================================
+        // 2. KHỞI TẠO & LẮNG NGHE DỮ LIỆU ĐÁM MÂY
+        // ==========================================
+        db.collection("inventory").onSnapshot((snapshot) => {
+            inventory = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            inventory.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            renderInventory();
+            renderSellGrid(); 
+        });
+
+        db.collection("shop_data").doc("sales").onSnapshot((doc) => {
+            if (doc.exists) {
+                dailySales = doc.data().records || {};
+                
+                for (let date in dailySales) {
+                    if (dailySales[date].bills) {
+                        let dailyTotal = 0;
+                        let dailyItems = {};
+                        
+                        dailySales[date].bills.forEach(bill => {
+                            dailyTotal += bill.total;
+                            bill.items.forEach(item => {
+                                if(!dailyItems[item.name]) dailyItems[item.name] = { price: item.price, qty: 0 };
+                                dailyItems[item.name].qty += item.qty;
+                            });
+                        });
+                        
+                        dailySales[date].total = dailyTotal;
+                        dailySales[date].items = dailyItems;
+                    }
+                }
+            } else {
+                dailySales = {};
+            }
+            calculateRevenueStats();
+            renderCalendar();
+            renderHistory(); 
+            if (currentViewedDate) showDateDetail(currentViewedDate); 
+        });
+
+        function saveSalesToCloud() {
+            db.collection("shop_data").doc("sales").set({ records: dailySales });
         }
 
-        window.previewImageFile = function(event) { processFile(event.target.files[0], 'add-image-base64', 'img-preview', 'img-preview-wrapper', 'upload-text'); }
-        window.previewModalImageFile = function(event) { processFile(event.target.files[0], 'modal-edit-image-base64', 'modal-edit-img-preview', 'modal-edit-img-preview-wrapper', null); }
-
-        function processFile(file, hiddenInputId, imgElementId, wrapperId, placeholderId) {
-            if (!file || !file.type.match('image.*')) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
+        function compressImage(base64Str, maxWidth = 250) {
+            return new Promise((resolve) => {
+                if (!base64Str) return resolve(null);
                 const img = new Image();
-                img.onload = function() {
+                img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_SIZE = 400;
-                    let width = img.width; let height = img.height;
-                    if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } }
-                    else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
+                    let width = img.width, height = img.height;
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
                     canvas.width = width; canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-                    
-                    document.getElementById(hiddenInputId).value = compressedBase64; 
-                    document.getElementById(imgElementId).src = compressedBase64;
-                    document.getElementById(wrapperId).style.display = 'block';
-                    if(placeholderId) document.getElementById(placeholderId).style.display = 'none';
-                }
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-        
-        document.addEventListener('paste', function (e) {
-            if (!document.getElementById('pane-manage').classList.contains('active')) return;
-            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-            for (let index in items) { 
-                if (items[index].kind === 'file') {
-                    processFile(items[index].getAsFile(), 'add-image-base64', 'img-preview', 'img-preview-wrapper', 'upload-text');
-                }
-            }
-        });
-
-        function renderMenu() {
-            const container = document.getElementById('render-products');
-            container.innerHTML = '';
-            Object.keys(CAT_NAMES).forEach(cat => {
-                const items = products.filter(p => p.category === cat);
-                if(items.length > 0) {
-                    container.innerHTML += `<div class="category-title">${CAT_NAMES[cat]}</div>`;
-                    items.forEach(p => {
-                        const isSoldOut = p.soldOut ? 'sold-out' : '';
-                        const clickAction = p.soldOut ? '' : `onclick="window.addToCart('${p.id}', 'S', ${p.priceS})"`;
-                        const clickActionL = p.soldOut ? '' : `onclick="window.addToCart('${p.id}', 'L', ${p.priceL})"`;
-                        const soldOutBadge = p.soldOut ? '<div style="color:#EF4444; font-weight:800; font-size:0.85em; margin-bottom:4px;">(TẠM HẾT MÓN)</div>' : '';
-
-                        container.innerHTML += `
-                            <div class="product-card ${isSoldOut}">
-                                <img src="${p.img}">
-                                <h3>${p.name}</h3>
-                                ${soldOutBadge}
-                                <div class="size-btns">
-                                    <button class="btn-size" ${clickAction}>Size S<br>${formatMoney(p.priceS)}</button>
-                                    <button class="btn-size" ${clickActionL}>Size L<br>${formatMoney(p.priceL)}</button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                }
+                    resolve(canvas.toDataURL('image/jpeg', 0.6)); 
+                };
+                img.onerror = () => resolve(base64Str);
+                img.src = base64Str;
             });
         }
 
-        window.addToCart = function(id, size, price) {
-            const product = products.find(p => p.id === id);
-            if(product && product.soldOut) return;
-            const existing = cart.find(c => c.id === id && c.size === size);
-            if(existing) existing.qty++; else cart.push({ id, name: product.name, size, price, qty: 1 });
+        // --- ĐIỀU HƯỚNG TAB ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('animate-fade-in');
+            });
+            const targetTab = document.getElementById(tabId);
+            targetTab.classList.remove('hidden');
+            void targetTab.offsetWidth; 
+            targetTab.classList.add('animate-fade-in');
+            
+            // Xử lý menu Desktop
+            document.querySelectorAll('aside nav button').forEach(el => el.classList.remove('bg-blue-800'));
+            if(document.getElementById('btn-' + tabId)) document.getElementById('btn-' + tabId).classList.add('bg-blue-800');
+            
+            // TỐI ƯU MENU MOBILE CHUẨN: Xóa hết màu xanh của TẤT CẢ các nút trước khi thêm màu xanh cho nút mới
+            document.querySelectorAll('.mobile-nav-btn').forEach(el => {
+                el.classList.remove('text-inni-blue', 'font-bold');
+                el.classList.add('text-gray-400');
+            });
+            if (document.getElementById('btn-mobile-' + tabId)) {
+                document.getElementById('btn-mobile-' + tabId).classList.remove('text-gray-400');
+                document.getElementById('btn-mobile-' + tabId).classList.add('text-inni-blue', 'font-bold');
+            }
+
+            if (tabId === 'tab-sell') renderSellGrid();
+            if (tabId === 'tab-history') renderHistory();
+            if (tabId === 'tab-inventory') renderInventory();
+            if (tabId === 'tab-stats') { renderCalendar(); calculateRevenueStats(); }
+        }
+
+        function renderSellGrid() {
+            const grid = document.getElementById('sell-grid');
+            const noResult = document.getElementById('sell-no-result');
+            grid.innerHTML = '';
+
+            const searchTerm = document.getElementById('sell-search-name').value.toLowerCase();
+            const filterCat = document.getElementById('sell-search-cat').value;
+            let count = 0;
+
+            inventory.forEach((item) => {
+                if (searchTerm && !item.name.toLowerCase().includes(searchTerm)) return;
+                if (filterCat !== 'all' && item.category !== filterCat) return;
+                count++;
+
+                const imgTag = item.image 
+                    ? `<div class="w-full h-24 bg-white rounded-lg mb-2 border border-gray-100 flex items-center justify-center overflow-hidden"><img src="${item.image}" class="max-w-full max-h-full object-contain"></div>` 
+                    : `<div class="w-full h-24 bg-gray-50 rounded-lg mb-2 flex items-center justify-center text-gray-300 border border-gray-100"><i class="fa-solid fa-image text-3xl"></i></div>`;
+
+                const isOutOfStock = item.stock <= 0;
+                const safeName = item.name.replace(/'/g, "\\'");
+
+                grid.innerHTML += `
+                    <div onclick="addToCart('${item.id}', '${safeName}', ${item.price}, ${item.stock})" class="bg-white border border-gray-200 rounded-xl p-2 shadow-sm flex flex-col justify-between hover:shadow-md transition cursor-pointer scale-active ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}">
+                        <div>
+                            ${imgTag}
+                            <div class="font-bold text-gray-800 text-xs line-clamp-2 leading-tight h-8 mb-1">${item.name}</div>
+                            <div class="text-[9px] text-white bg-blue-400 px-2 py-0.5 rounded-full inline-block mb-1">${item.category}</div>
+                            <div class="text-red-500 font-bold text-sm mb-1">${item.price.toLocaleString('vi-VN').replace(/,/g, '.')} đ</div>
+                            <div class="text-[10px] font-semibold ${isOutOfStock ? 'text-red-400' : 'text-green-600'}">Kho: ${item.stock > 0 ? item.stock : 'Hết hàng'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (count === 0) noResult.classList.remove('hidden');
+            else noResult.classList.add('hidden');
+            
+            renderCart(); 
+        }
+
+        function addToCart(id, name, price, stock) {
+            if (!cart[id]) {
+                cart[id] = { name, price, qty: 0, maxStock: stock };
+            }
+            if (cart[id].qty < cart[id].maxStock) {
+                cart[id].qty++;
+                renderCart();
+            } else {
+                alert("Đã đạt giới hạn số lượng trong kho!");
+            }
+        }
+
+        function updateCartQty(id, delta) {
+            if (!cart[id]) return;
+            cart[id].qty += delta;
+            if (cart[id].qty <= 0) {
+                delete cart[id];
+            } else if (cart[id].qty > cart[id].maxStock) {
+                cart[id].qty = cart[id].maxStock;
+                alert("Không đủ hàng trong kho!");
+            }
             renderCart();
         }
 
         function renderCart() {
-            const container = document.getElementById('render-cart');
-            container.innerHTML = cart.length ? '' : '<p style="text-align:center; color:#9CA3AF; margin-top: 20px; font-weight: 500;">Giỏ hàng trống</p>';
-            let total = 0;
-            cart.forEach((c, index) => {
-                total += c.price * c.qty;
-                container.innerHTML += `
-                    <div class="cart-item">
-                        <div><b style="color: #1F2937;">${c.name} <span style="background:var(--cam-nhat); color:var(--cam-dam); padding:2px 6px; border-radius:4px; font-size:0.8em; margin-left: 5px;">Size ${c.size}</span></b><br><span style="color:#6B7280; font-size:0.95em">${formatMoney(c.price)} x ${c.qty}</span></div>
-                        <div style="text-align:right; display:flex; align-items:center; gap:10px;"><span style="color:var(--cam-chinh); font-weight:800">${formatMoney(c.price * c.qty)}</span> <i class="fa-solid fa-trash" style="color:#EF4444; cursor:pointer; padding:5px;" onclick="window.removeFromCart(${index})"></i></div>
-                    </div>`;
-            });
-            document.getElementById('cart-total-val').innerText = formatMoney(total);
-        }
-        window.removeFromCart = function(index) { cart.splice(index, 1); renderCart(); }
-
-        window.checkout = async function() {
-            if(cart.length === 0) return alert("Giỏ trống!");
-            const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-            const now = new Date();
-            const bill = { dateStr: getCustomDateString(now), timeStr: getCustomTimeString(now), dateObj: now.getTime(), cashier: document.getElementById('cashier-name').value || "Thu ngân", items: [...cart], total: total, status: "pending" };
-            
-            try {
-                const docRef = await addDoc(collection(db, "melon_bills"), bill);
-                window.showKitchenToast(docRef.id);
-                cart = []; renderCart(); 
-                alert("Thanh toán thành công! Đơn đã đồng bộ lên Cloud.");
-            } catch(e) { alert("Lỗi khi lưu đơn hàng lên cloud: " + e.message); }
-        }
-
-        function updateKitchenBadge() {
-            const count = pendingOrders.length;
-            document.getElementById('sidebar-badge').innerText = count;
-            document.getElementById('top-badge').innerText = count;
-            const badgeEl = document.getElementById('sidebar-badge');
-            badgeEl.style.display = count > 0 ? 'flex' : 'none';
-        }
-        window.showKitchenToast = function(billId) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.onclick = window.openKitchenModal;
-            toast.innerHTML = `<i class="fa-solid fa-bell" style="font-size: 1.8em;"></i><div><b style="font-size: 1.1em; letter-spacing: 0.5px;">ĐƠN HÀNG MỚI!</b><br><span style="font-size:0.95em">Đang có ${pendingOrders.length} đơn chờ pha chế. Bấm để xem.</span></div>`;
-            container.appendChild(toast);
-            setTimeout(() => { if(container.contains(toast)) toast.remove(); }, 6000);
-        }
-        window.openKitchenModal = function() {
-            document.getElementById('toast-container').innerHTML = ''; 
-            const list = document.getElementById('kitchen-orders-list');
+            const list = document.getElementById('cart-list');
+            const totalEl = document.getElementById('cart-total');
             list.innerHTML = '';
-            if(pendingOrders.length === 0) {
-                list.innerHTML = '<p style="text-align:center; color:#6B7280; padding: 20px; font-weight: 500;">Không còn đơn chờ nào!</p>';
-            } else {
-                pendingOrders.forEach((o) => {
-                    let itemsHtml = o.items.map(i => `<div class="kitchen-item"><b><span style="color:var(--cam-chinh);">${i.qty} x</span></b> ${i.name} (Size ${i.size})</div>`).join('');
-                    list.innerHTML += `<div class="kitchen-order"><h3 style="color: var(--cam-chinh); margin-bottom: 10px; display: flex; justify-content: space-between; border-bottom: 1px dashed #D1D5DB; padding-bottom: 8px;">Mã: ${o.id.substring(0,6).toUpperCase()} <span style="color:#6B7280;">${o.timeStr}</span></h3>${itemsHtml}<button class="btn-done" onclick="window.finishOrder('${o.id}')"><i class="fa-solid fa-check-double"></i> ĐÃ PHA XONG</button></div>`;
-                });
+            currentCartTotal = 0;
+
+            const keys = Object.keys(cart);
+            if (keys.length === 0) {
+                list.innerHTML = '<li class="text-center text-gray-400 text-sm italic mt-10">Giỏ hàng trống</li>';
+                totalEl.innerText = "0 đ";
+                return;
             }
-            document.getElementById('kitchen-modal').style.display = 'flex';
-        }
-        window.finishOrder = async function(id) {
-            try { await setDoc(doc(db, "melon_bills", id), { status: "done" }, { merge: true }); } 
-            catch(e) { alert("Lỗi khi hoàn thành đơn: " + e.message); }
-        }
-        window.closeKitchenModal = function() { document.getElementById('kitchen-modal').style.display = 'none'; }
 
-        function renderRecipes() {
-            const container = document.getElementById('render-recipes');
-            container.innerHTML = '';
-            
-            Object.keys(CAT_NAMES).forEach(cat => {
-                const items = products.filter(p => p.category === cat);
-                if(items.length > 0) {
-                    container.innerHTML += `<div class="category-title">${CAT_NAMES[cat]}</div>`;
-                    items.forEach(p => {
-                        container.innerHTML += `
-                            <div class="recipe-card" onclick="window.showRecipeDetail('${p.id}')">
-                                <img src="${p.img}">
-                                <h4 style="color: var(--cam-chinh); margin-top: 10px; font-weight: 800;">${p.name}</h4>
-                            </div>
-                        `;
-                    });
-                }
-            });
-        }
-        window.showRecipeDetail = function(id) {
-            const p = products.find(x => x.id === id);
-            document.getElementById('modal-img-src').src = p.img;
-            document.getElementById('modal-title').innerText = p.name;
-            const steps = p.recipe ? p.recipe.split('\n').map(line => `<li>${line}</li>`).join('') : 'Chưa cập nhật công thức';
-            document.getElementById('modal-steps').innerHTML = steps;
-            document.getElementById('recipe-modal').style.display = 'flex';
-        }
-        window.closeRecipeModal = function() { document.getElementById('recipe-modal').style.display = 'none'; }
+            keys.forEach(id => {
+                const item = cart[id];
+                const itemTotal = item.price * item.qty;
+                currentCartTotal += itemTotal;
 
-        function renderManageList() {
-            const container = document.getElementById('render-manage-items');
-            container.innerHTML = products.map(p => `
-                <div class="manage-item">
-                    <div class="manage-info">
-                        <img src="${p.img}">
-                        <div>
-                            <b style="font-size: 1.05em; color: #111827;">${p.name}</b> ${p.soldOut ? '<span style="color:#EF4444; font-size:0.8em; font-weight: bold; background: #FEE2E2; padding: 2px 6px; border-radius: 4px; margin-left: 5px;">(Tạm hết)</span>' : ''}<br>
-                            <span style="font-size:0.9em;color:#6B7280; margin-top: 4px; display: block;">S: ${formatMoney(p.priceS)} | L: ${formatMoney(p.priceL)}</span>
+                list.innerHTML += `
+                    <li class="bg-gray-50 p-2 rounded border border-gray-100 flex flex-col gap-2 animate-fade-in">
+                        <div class="flex justify-between items-start">
+                            <div class="font-bold text-gray-800 text-sm line-clamp-1">${item.name}</div>
+                            <button onclick="updateCartQty('${id}', -999)" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
                         </div>
-                    </div>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <label class="toggle-checkbox" title="Tích để đánh dấu tạm hết món">
-                            <input type="checkbox" ${p.soldOut ? 'checked' : ''} onchange="window.toggleSoldOut('${p.id}', this.checked)"> Tạm hết
-                        </label>
-                        <button class="btn-action btn-edit" onclick="window.editProduct('${p.id}')"><i class="fa-solid fa-pen"></i> Sửa</button>
-                        <button class="btn-action btn-delete" onclick="window.deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                </div>`).join('');
+                        <div class="flex justify-between items-center">
+                            <div class="text-xs text-red-500 font-bold">${itemTotal.toLocaleString('vi-VN').replace(/,/g, '.')} đ</div>
+                            <div class="flex items-center gap-2 bg-white border border-gray-200 rounded">
+                                <button onclick="updateCartQty('${id}', -1)" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-l scale-active"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                                <span class="font-bold text-inni-blue text-sm w-4 text-center">${item.qty}</span>
+                                <button onclick="updateCartQty('${id}', 1)" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-r scale-active"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                            </div>
+                        </div>
+                    </li>
+                `;
+            });
+            totalEl.innerText = currentCartTotal.toLocaleString('vi-VN').replace(/,/g, '.') + " đ";
         }
 
-        window.toggleSoldOut = async function(id, isSoldOut) {
-            try {
-                await setDoc(doc(db, "melon_products", id), { soldOut: isSoldOut }, { merge: true });
-            } catch(e) {
-                alert("Lỗi cập nhật trạng thái món: " + e.message);
+        function checkoutCart() {
+            if (Object.keys(cart).length === 0) return alert("Giỏ hàng trống!");
+            openPaymentModal();
+        }
+
+        function openPaymentModal() {
+            document.getElementById('payment-total').innerText = currentCartTotal.toLocaleString('vi-VN').replace(/,/g, '.') + " đ";
+            document.getElementById('customer-paid-input').value = '';
+            document.getElementById('payment-change').innerText = "0 đ";
+            document.getElementById('payment-change').classList.remove('text-red-500');
+            document.getElementById('payment-change').classList.add('text-blue-600');
+            document.getElementById('payment-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('customer-paid-input').focus(), 100);
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+        }
+
+        function calculateChange() {
+            const paid = getRawNumberFromInput('customer-paid-input');
+            const changeEl = document.getElementById('payment-change');
+            
+            if (document.getElementById('customer-paid-input').value === '') {
+                changeEl.innerText = "0 đ";
+                changeEl.classList.remove('text-red-500');
+                changeEl.classList.add('text-blue-600');
+                return;
+            }
+
+            const change = paid - currentCartTotal;
+            if (change < 0) {
+                changeEl.innerText = "Khách đưa thiếu " + Math.abs(change).toLocaleString('vi-VN').replace(/,/g, '.') + " đ";
+                changeEl.classList.add('text-red-500');
+                changeEl.classList.remove('text-blue-600');
+            } else {
+                changeEl.innerText = change.toLocaleString('vi-VN').replace(/,/g, '.') + " đ";
+                changeEl.classList.remove('text-red-500');
+                changeEl.classList.add('text-blue-600');
             }
         }
 
-        window.editProduct = function(id) {
-            const p = products.find(item => item.id === id);
-            if(!p) return;
-            document.getElementById('modal-edit-product-id').value = p.id;
-            document.getElementById('modal-edit-name').value = p.name;
-            document.getElementById('modal-edit-price-s').value = p.priceS ? p.priceS.toLocaleString('en-US') : '';
-            document.getElementById('modal-edit-price-l').value = p.priceL ? p.priceL.toLocaleString('en-US') : '';
-            document.getElementById('modal-edit-recipe').value = p.recipe || '';
-            document.getElementById('modal-edit-category').value = p.category;
-            
-            document.getElementById('modal-edit-image-base64').value = p.img;
-            document.getElementById('modal-edit-img-preview').src = p.img;
-            
-            document.getElementById('edit-product-modal').style.display = 'flex';
-        }
-        
-        window.closeEditProductModal = function() {
-            document.getElementById('edit-product-modal').style.display = 'none';
-        }
-
-        window.saveEditedProduct = async function() {
-            const id = document.getElementById('modal-edit-product-id').value;
-            const name = document.getElementById('modal-edit-name').value;
-            const priceS = parseInt(document.getElementById('modal-edit-price-s').value.replace(/[,.]/g, ''));
-            const priceL = parseInt(document.getElementById('modal-edit-price-l').value.replace(/[,.]/g, ''));
-            const recipe = document.getElementById('modal-edit-recipe').value;
-            const cat = document.getElementById('modal-edit-category').value;
-            const img = document.getElementById('modal-edit-image-base64').value;
-
-            if(!name || isNaN(priceS) || isNaN(priceL)) return alert("Vui lòng điền đủ Tên và Giá!");
-            
-            let productData = { category: cat, name, priceS, priceL, recipe, img };
-
-            try {
-                await setDoc(doc(db, "melon_products", id), productData, { merge: true });
-                alert("Đã cập nhật món thành công!");
-                window.closeEditProductModal();
-            } catch (e) { alert("Lỗi khi lưu món: " + e.message); }
-        }
-
-        window.resetProductForm = function() {
-            document.getElementById('add-name').value = '';
-            document.getElementById('add-price-s').value = '';
-            document.getElementById('add-price-l').value = '';
-            document.getElementById('add-recipe').value = '';
-            document.getElementById('add-image-base64').value = '';
-            document.getElementById('img-preview-wrapper').style.display = 'none';
-            document.getElementById('upload-text').style.display = 'block';
-        }
-
-        function populateEditProductDropdown() {
-            const select = document.getElementById('edit-add-product-id');
-            select.innerHTML = products.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-        }
-
-        window.saveNewProduct = async function() {
-            const name = document.getElementById('add-name').value;
-            const priceS = parseInt(document.getElementById('add-price-s').value.replace(/[,.]/g, ''));
-            const priceL = parseInt(document.getElementById('add-price-l').value.replace(/[,.]/g, ''));
-            const recipe = document.getElementById('add-recipe').value;
-            const cat = document.getElementById('add-category').value;
-            const img = document.getElementById('add-image-base64').value || "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23FFF0E6'/><text y='65' x='10' font-size='70'>🍈</text></svg>";
-
-            if(!name || isNaN(priceS) || isNaN(priceL)) return alert("Vui lòng điền đủ Tên và Giá!");
-            
-            let productData = { category: cat, name, priceS, priceL, recipe, img, soldOut: false };
-
-            try {
-                await addDoc(collection(db, "melon_products"), productData);
-                alert("Đã thêm món mới thành công!");
-                window.resetProductForm();
-            } catch (e) { alert("Lỗi khi thêm món: " + e.message); }
-        }
-
-        window.deleteProduct = async function(id) {
-            if(confirm("Xóa vĩnh viễn món này khỏi hệ thống?")) {
-                try { await deleteDoc(doc(db, "melon_products", id)); } 
-                catch(e) { alert("Lỗi: " + e.message); }
+        function confirmCheckout() {
+            const paid = getRawNumberFromInput('customer-paid-input');
+            if (document.getElementById('customer-paid-input').value !== '' && paid < currentCartTotal) {
+                return alert("Số tiền khách đưa chưa đủ!");
             }
+
+            const sellerName = document.getElementById('seller-name').value.trim() || "Chủ Quán";
+            const dateStr = getLocalTodayString();
+            const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            let billItems = [];
+
+            if (!dailySales[dateStr]) dailySales[dateStr] = { total: 0, bills: [], items: {} };
+            if (!dailySales[dateStr].bills) dailySales[dateStr].bills = [];
+
+            for (let id in cart) {
+                const item = cart[id];
+                const itemTotal = item.price * item.qty;
+                billItems.push({ name: item.name, price: item.price, qty: item.qty, total: itemTotal, inventoryId: id });
+
+                const dbItem = inventory.find(i => i.id === id);
+                if(dbItem) {
+                    db.collection("inventory").doc(id).update({ stock: dbItem.stock - item.qty });
+                }
+            }
+
+            const newBill = {
+                id: 'BILL-' + Math.floor(Math.random() * 10000), 
+                seller: sellerName,
+                time: timeStr,
+                total: currentCartTotal,
+                items: billItems
+            };
+
+            dailySales[dateStr].bills.push(newBill);
+            
+            saveSalesToCloud();
+            
+            alert(`Thanh toán thành công Bill ${newBill.id}!`);
+            cart = {}; 
+            renderCart();
+            closePaymentModal();
         }
 
-        window.renderHistory = function() {
-            const tbody = document.getElementById('render-history');
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            const empty = document.getElementById('history-empty');
+            list.innerHTML = '';
+            let hasHistory = false;
+
+            const sortedDates = Object.keys(dailySales).sort().reverse();
+
+            sortedDates.forEach(date => {
+                const dayData = dailySales[date];
+                if (!dayData.bills || dayData.bills.length === 0) return;
+                hasHistory = true;
+
+                const dateHeader = `<div class="bg-gray-100 text-gray-700 font-bold px-3 py-2 rounded mt-4 mb-3 text-sm border-l-4 border-inni-blue uppercase">${date.split('-').reverse().join('/')}</div>`;
+                list.innerHTML += dateHeader;
+
+                const sortedBills = [...dayData.bills].reverse();
+
+                sortedBills.forEach((bill, index) => {
+                    const billId = bill.id;
+                    const itemsText = bill.items.map(i => `${i.name} (x${i.qty})`).join(', ');
+
+                    list.innerHTML += `
+                        <div onclick="openBillDetail('${date}', ${dayData.bills.length - 1 - index})" class="bg-white border border-gray-200 rounded-xl p-4 mb-3 hover:border-inni-blue hover:shadow-md transition cursor-pointer shadow-sm scale-active relative overflow-hidden group">
+                            <div class="absolute top-0 left-0 w-1 h-full bg-blue-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="flex justify-between items-center mb-3 pb-3 border-b border-gray-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-inni-blue shrink-0">
+                                        <i class="fa-solid fa-receipt text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-bold text-gray-800 text-sm">Hóa đơn #${billId}</div>
+                                        <div class="text-xs text-gray-500 mt-0.5"><i class="fa-regular fa-clock mr-1"></i>${bill.time} - Thu ngân: ${bill.seller}</div>
+                                    </div>
+                                </div>
+                                <div class="text-right shrink-0 ml-2">
+                                    <div class="text-red-500 font-bold text-lg">${bill.total.toLocaleString('vi-VN').replace(/,/g, '.')} đ</div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-600 line-clamp-1 italic">${itemsText}</div>
+                        </div>
+                    `;
+                });
+            });
+
+            if (hasHistory) empty.classList.add('hidden');
+            else empty.classList.remove('hidden');
+        }
+
+        function openBillDetail(date, billIndex) {
+            const bill = dailySales[date].bills[billIndex];
+            
+            document.getElementById('bill-delete-date').value = date;
+            document.getElementById('bill-delete-index').value = billIndex;
+            
+            document.getElementById('bill-detail-date').innerText = date.split('-').reverse().join('/') + ' ' + bill.time;
+            document.getElementById('bill-detail-id').innerText = bill.id;
+            document.getElementById('bill-detail-seller').innerText = bill.seller;
+            document.getElementById('bill-detail-total').innerText = bill.total.toLocaleString('vi-VN').replace(/,/g, '.') + ' đ';
+
+            const tbody = document.getElementById('bill-detail-items');
             tbody.innerHTML = '';
-            [...bills].reverse().forEach(b => {
-                let itemsText = b.items.map(i => `<b style="color:#111827">${i.name}</b>(${i.size})x${i.qty}`).join(" <span style='color:#D1D5DB'>|</span> ");
+            bill.items.forEach(item => {
                 tbody.innerHTML += `
-                    <tr class="history-row" onclick="window.openPreviewModal('${b.id}')">
-                        <td><span class="bill-link">${b.id.substring(0,6).toUpperCase()}</span></td>
-                        <td style="color:#6B7280; font-weight:500;">${b.timeStr} <span style="font-size:0.85em;color:#9CA3AF">${b.dateStr}</span></td>
-                        <td style="font-weight:600;">${b.cashier}</td>
-                        <td style="font-size:0.9em; max-width: 250px; white-space: normal; line-height:1.4;">${itemsText}</td>
-                        <td style="color:var(--cam-chinh); font-weight:800; font-size:1.1em;">${formatMoney(b.total)}</td>
-                        <td style="text-align: center;" onclick="event.stopPropagation()">
-                            <button class="btn-action btn-delete" style="padding: 8px 15px;" onclick="window.deleteBill('${b.id}')"><i class="fa-solid fa-trash"></i></button>
+                    <tr class="border-b border-gray-100 last:border-0">
+                        <td class="py-2 pr-2">
+                            <div class="font-bold text-gray-800 line-clamp-2 leading-tight">${item.name}</div>
+                            <div class="text-xs text-gray-400 mt-0.5">${item.price.toLocaleString('vi-VN').replace(/,/g, '.')} đ</div>
                         </td>
+                        <td class="py-2 text-center align-middle font-bold text-gray-600">${item.qty}</td>
+                        <td class="py-2 text-right align-middle font-bold text-gray-800 whitespace-nowrap">${item.total.toLocaleString('vi-VN').replace(/,/g, '.')}</td>
                     </tr>
                 `;
             });
+
+            document.getElementById('bill-detail-modal').classList.remove('hidden');
         }
 
-        window.openPreviewModal = function(billId) {
-            const bill = bills.find(b => b.id === billId);
-            if(!bill) return;
-            currentPreviewBillId = billId;
-            let itemsHtml = bill.items.map(i => `<div style="display: flex; justify-content: space-between; margin-bottom: 5px;"><div style="flex: 2;">${i.name} (${i.size})</div><div style="flex: 1; text-align: center;">x${i.qty}</div><div style="flex: 1; text-align: right;">${formatMoney(i.price * i.qty)}</div></div>`).join('');
-            document.getElementById('preview-receipt-content').innerHTML = `
-                <div style="text-align:center; margin-bottom: 10px;"><h2 style="margin:0; font-size: 1.6em; font-weight:800;">MELON COFFEE</h2></div>
-                <div style="border-bottom: 1px dashed #9CA3AF; margin-bottom: 15px;"></div>
-                <p style="margin: 4px 0;"><b>Mã HĐ:</b> ${bill.id.substring(0,6).toUpperCase()}</p>
-                <p style="margin: 4px 0;"><b>Ngày:</b> ${bill.timeStr} - ${bill.dateStr}</p>
-                <p style="margin: 4px 0;"><b>Thu ngân:</b> ${bill.cashier}</p>
-                <div style="border-bottom: 1px dashed #9CA3AF; margin: 15px 0;"></div>
-                <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px;"><div style="flex: 2;">Tên món</div><div style="flex: 1; text-align: center;">SL</div><div style="flex: 1; text-align: right;">TT</div></div>
-                ${itemsHtml}
-                <div style="border-bottom: 1px dashed #9CA3AF; margin: 15px 0;"></div>
-                <div style="text-align: right; font-size: 1.3em; font-weight: 800;">TỔNG: ${formatMoney(bill.total)}</div>
-                <p style="text-align:center; margin-top: 20px; font-size: 0.85em; color: #4B5563;">Cảm ơn quý khách & Hẹn gặp lại!</p>
-            `;
-            document.getElementById('preview-bill-modal').style.display = 'flex';
-        }
-        window.closePreviewModal = function() { document.getElementById('preview-bill-modal').style.display = 'none'; currentPreviewBillId = null; }
-        window.printFromPreview = function() {
-            const content = document.getElementById('preview-receipt-content').innerHTML;
-            document.getElementById('print-section').innerHTML = `<div class="thermal-print-wrapper">${content}</div>`;
-            window.print();
-        }
-        window.editFromPreview = function() {
-            if(currentPreviewBillId) { const id = currentPreviewBillId; window.closePreviewModal(); window.openEditBillModal(id); }
-        }
-        window.deleteBill = async function(billId) {
-            if(confirm(`XÓA vĩnh viễn Bill ${billId.substring(0,6).toUpperCase()} khỏi Cloud?`)) {
-                try { await deleteDoc(doc(db, "melon_bills", billId)); alert("Đã xóa Bill thành công!"); } 
-                catch(e) { alert("Lỗi khi xóa: " + e.message); }
-            }
+        function closeBillModal() {
+            document.getElementById('bill-detail-modal').classList.add('hidden');
         }
 
-        window.openEditBillModal = function(billId) {
-            const originalBill = bills.find(b => b.id === billId);
-            if(!originalBill) return;
-            tempEditBill = JSON.parse(JSON.stringify(originalBill)); 
-            document.getElementById('edit-modal-bill-id').innerText = tempEditBill.id.substring(0,6).toUpperCase();
-            renderEditBillItems();
-            document.getElementById('edit-bill-modal').style.display = 'flex';
-        }
-        window.closeEditBillModal = function() { tempEditBill = null; document.getElementById('edit-bill-modal').style.display = 'none'; }
-        function renderEditBillItems() {
-            const container = document.getElementById('edit-modal-items-list');
-            let total = 0; container.innerHTML = '';
-            if(tempEditBill.items.length === 0) container.innerHTML = '<p style="text-align:center; color:#EF4444; font-weight:600;">Bill đang trống! Hãy thêm món hoặc xóa luôn bill này.</p>';
-            tempEditBill.items.forEach((item, index) => {
-                total += item.price * item.qty;
-                container.innerHTML += `<div class="edit-row"><div><b style="color:#111827; font-size:1.1em;">${item.name}</b> <span style="background:var(--cam-chinh); color:white; padding:2px 6px; border-radius:4px; font-size:0.8em; font-weight:bold;">Size ${item.size}</span><div style="color:#6B7280; font-size:0.9em; margin-top:6px;">Đơn giá: ${formatMoney(item.price)}</div></div><div class="qty-controls"><button class="qty-btn" onclick="window.updateTempBillQty(${index}, -1)">-</button><span style="font-weight:800; font-size:1.2em; width:25px; text-align:center;">${item.qty}</span><button class="qty-btn" onclick="window.updateTempBillQty(${index}, 1)">+</button><button class="btn-action btn-delete" style="margin-left:15px; padding: 6px 12px;" onclick="window.removeTempBillItem(${index})"><i class="fa-solid fa-xmark"></i></button></div></div>`;
-            });
-            tempEditBill.total = total;
-            document.getElementById('edit-modal-total').innerText = formatMoney(total);
-        }
-        window.updateTempBillQty = function(index, change) {
-            tempEditBill.items[index].qty += change;
-            if(tempEditBill.items[index].qty <= 0) tempEditBill.items.splice(index, 1); 
-            renderEditBillItems();
-        }
-        window.removeTempBillItem = function(index) { tempEditBill.items.splice(index, 1); renderEditBillItems(); }
-        window.editBillAddNewItem = function() {
-            const prodId = document.getElementById('edit-add-product-id').value;
-            const size = document.getElementById('edit-add-size').value;
-            const product = products.find(p => p.id === prodId);
-            const price = size === 'S' ? product.priceS : product.priceL;
-            const existing = tempEditBill.items.find(i => i.id === prodId && i.size === size);
-            if(existing) existing.qty++; else tempEditBill.items.push({ id: prodId, name: product.name, size: size, price: price, qty: 1 });
-            renderEditBillItems();
-        }
-        window.saveEditedBill = async function() {
-            if(tempEditBill.items.length === 0) return alert("Bill trống.");
-            try {
-                await setDoc(doc(db, "melon_bills", tempEditBill.id), tempEditBill, { merge: true });
-                window.closeEditBillModal();
-                alert("Đã cập nhật Bill trên Cloud thành công!");
-            } catch(e) { alert("Lỗi sửa bill: " + e.message); }
-        }
-
-        window.renderStats = function() {
-            const now = new Date(); let t1d = 0, t3d = 0, t1w = 0, tMonth = 0;
-            const dailyRev = {};
-
-            bills.forEach(b => {
-                const diffDays = Math.ceil(Math.abs(now - new Date(b.dateObj)) / (1000 * 3600 * 24));
-                if(diffDays <= 1) t1d += b.total;
-                if(diffDays <= 3) t3d += b.total;
-                if(diffDays <= 7) t1w += b.total;
-                if(!dailyRev[b.dateStr]) dailyRev[b.dateStr] = 0;
-                dailyRev[b.dateStr] += b.total;
-            });
-
-            document.getElementById('stat-1d').innerText = formatMoney(t1d);
-            document.getElementById('stat-3d').innerText = formatMoney(t3d);
-            document.getElementById('stat-1w').innerText = formatMoney(t1w);
-
-            const year = parseInt(document.getElementById('stat-year-select').value);
-            const month = parseInt(document.getElementById('stat-month-select').value) - 1;
-            const lastDate = new Date(year, month + 1, 0).getDate();
-            let startDay = new Date(year, month, 1).getDay(); startDay = startDay === 0 ? 6 : startDay - 1;
-
-            const grid = document.getElementById('render-calendar');
-            grid.innerHTML = ['T2','T3','T4','T5','T6','T7','<span style="color:#EF4444">CN</span>'].map(d => `<div style="text-align:center;font-weight:800;color:#6B7280; font-size:0.9em;">${d}</div>`).join('');
-            for(let i=0; i<startDay; i++) grid.innerHTML += `<div class="cal-cell" style="border:none; background:transparent; box-shadow:none;"></div>`;
+        function deleteBill() {
+            const date = document.getElementById('bill-delete-date').value;
+            const index = parseInt(document.getElementById('bill-delete-index').value);
             
-            for(let i=1; i<=lastDate; i++) {
-                let dStr = getCustomDateString(new Date(year, month, i));
-                let rev = dailyRev[dStr] || 0; tMonth += rev;
+            if(confirm(`Bạn có chắc muốn xóa Bill này?\nToàn bộ sản phẩm sẽ được HOÀN TRẢ LẠI KHO.`)) {
+                const bill = dailySales[date].bills[index];
                 
-                let isToday = (dStr === getCustomDateString(now)) ? 'today' : '';
-                let bg = rev > 0 ? 'has-data' : '';
-                let revHtml = rev > 0 ? `<div class="cal-rev">+${(rev/1000)}k</div>` : '';
-                
-                grid.innerHTML += `<div class="cal-cell ${bg} ${isToday}"><div class="cal-date">${i}</div>${revHtml}</div>`;
-            }
-            document.getElementById('stat-month').innerText = formatMoney(tMonth);
-        }
-
-        // Xuất File CSV Lịch Sử Bill (Định dạng: 1 dòng = 1 món)
-        window.exportBillHistoryCSV = function() {
-            let csv = "Ma Bill,Ngay Gio,Thu Ngan,Ten Thuc Uong,Size,So Luong,Don Gia,Tong Cong\n";
-            bills.forEach(b => {
-                b.items.forEach(item => {
-                    csv += `${b.id.substring(0,6).toUpperCase()},${b.dateStr} ${b.timeStr},${b.cashier},${item.name},${item.size},${item.qty},${item.price},${item.price * item.qty}\n`;
-                });
-            });
-            downloadCSV(csv, "Lich_Su_Ban_Hang.csv");
-        }
-
-        // Xuất File CSV Báo Cáo Doanh Thu (Định dạng: Doanh thu theo từng ngày của tháng đang chọn)
-        window.exportRevenueStatsCSV = function() {
-            const year = parseInt(document.getElementById('stat-year-select').value);
-            const month = parseInt(document.getElementById('stat-month-select').value); 
-            
-            let csv = `Bao Cao Doanh Thu Thang ${month}/${year}\n`;
-            csv += "Ngay,So Luong Don,Tong Doanh Thu\n";
-            
-            let dailyData = {};
-            let totalRev = 0;
-            let totalBills = 0;
-
-            bills.forEach(b => {
-                let parts = b.dateStr.split('/');
-                let bMonth = parseInt(parts[1]);
-                let bYear = parseInt(parts[2]);
-
-                if (bMonth === month && bYear === year) {
-                    if(!dailyData[b.dateStr]) {
-                        dailyData[b.dateStr] = { count: 0, rev: 0 };
+                bill.items.forEach(bItem => {
+                    if (bItem.inventoryId) {
+                        const dbItem = inventory.find(i => i.id === bItem.inventoryId);
+                        if(dbItem) {
+                            db.collection("inventory").doc(dbItem.id).update({ stock: dbItem.stock + bItem.qty });
+                        }
                     }
-                    dailyData[b.dateStr].count += 1;
-                    dailyData[b.dateStr].rev += b.total;
-                    totalRev += b.total;
-                    totalBills += 1;
-                }
-            });
-
-            Object.keys(dailyData).forEach(date => {
-                csv += `${date},${dailyData[date].count},${dailyData[date].rev}\n`;
-            });
-
-            csv += `TONG CONG,${totalBills},${totalRev}\n`;
-            
-            downloadCSV(csv, `Bao_Cao_Doanh_Thu_T${month}_${year}.csv`);
+                });
+                
+                dailySales[date].bills.splice(index, 1);
+                saveSalesToCloud(); 
+                closeBillModal();
+                alert("Đã xóa Bill và hoàn trả kho thành công!");
+            }
         }
 
-        // Hàm hỗ trợ tải file chung
-        function downloadCSV(csvContent, fileName) {
-            const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        function exportStatsToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
+            csvContent += "Tên Sản Phẩm,Đơn Giá Hiện Tại,Tổng Số Lượng Đã Bán,Tổng Doanh Thu\n";
+
+            let itemStats = {};
+            let grandTotal = 0;
+
+            for (let date in dailySales) {
+                let dayData = dailySales[date];
+                if (dayData.items) {
+                    for (let itemName in dayData.items) {
+                        if (!itemStats[itemName]) {
+                            itemStats[itemName] = { price: dayData.items[itemName].price, qty: 0, total: 0 };
+                        }
+                        itemStats[itemName].qty += dayData.items[itemName].qty;
+                        itemStats[itemName].total += (dayData.items[itemName].price * dayData.items[itemName].qty);
+                    }
+                }
+                if (dayData.total) {
+                    grandTotal += dayData.total;
+                }
+            }
+
+            let sortedItems = Object.keys(itemStats).sort((a, b) => itemStats[b].qty - itemStats[a].qty);
+
+            sortedItems.forEach(itemName => {
+                let stat = itemStats[itemName];
+                let safeName = `"${itemName.replace(/"/g, '""')}"`;
+                csvContent += `${safeName},${stat.price},${stat.qty},${stat.total}\n`;
+            });
+
+            csvContent += `\nTỔNG CỘNG TẤT CẢ DOANH THU,,,${grandTotal}\n`;
+
+            const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", fileName);
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Bao_Cao_Tong_Doanh_Thu_${getLocalTodayString()}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+        function exportToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
+            csvContent += "Ngày,Giờ Giao Dịch,Mã Hóa Đơn,Thu Ngân,Sản Phẩm,Đơn Giá,Số Lượng,Thành Tiền,Tổng Hóa Đơn\n";
+
+            for (let date in dailySales) {
+                let dayData = dailySales[date];
+                if (dayData.bills) {
+                    dayData.bills.forEach(bill => {
+                        bill.items.forEach((item, index) => {
+                            let safeName = `"${item.name.replace(/"/g, '""')}"`;
+                            if (index === 0) {
+                                csvContent += `${date},${bill.time},${bill.id},${bill.seller},${safeName},${item.price},${item.qty},${item.total},${bill.total}\n`;
+                            } else {
+                                csvContent += `,,,,${safeName},${item.price},${item.qty},${item.total},\n`;
+                            }
+                        });
+                    });
+                }
+            }
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Lich_Su_Ban_Hang_${getLocalTodayString()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function getLocalTodayString() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function getRevenueForDays(days) {
+            let total = 0;
+            for(let i=0; i<days; i++) {
+                let d = new Date(); d.setDate(d.getDate() - i);
+                let dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                if(dailySales[dateStr]) total += dailySales[dateStr].total;
+            }
+            return total;
+        }
+
+        function calculateRevenueStats() {
+            document.getElementById('rev-1-day').innerText = getRevenueForDays(1).toLocaleString('vi-VN').replace(/,/g, '.') + " đ";
+            document.getElementById('rev-3-days').innerText = getRevenueForDays(3).toLocaleString('vi-VN').replace(/,/g, '.') + " đ";
+            document.getElementById('rev-7-days').innerText = getRevenueForDays(7).toLocaleString('vi-VN').replace(/,/g, '.') + " đ";
+        }
+
+        async function addProduct() {
+            const btn = document.getElementById('btn-add-product');
+            const name = document.getElementById('prod-name').value;
+            const category = document.getElementById('prod-category').value;
+            const price = getRawNumberFromInput('prod-price-input');
+            const stock = parseInt(document.getElementById('prod-stock').value);
+            const imageInput = document.getElementById('prod-image');
+
+            if (!name || isNaN(price) || isNaN(stock)) return alert("Vui lòng nhập đủ thông tin!");
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tải lên...';
+
+            let base64 = null;
+            if (imageInput.files.length > 0) {
+                base64 = await new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target.result);
+                    reader.readAsDataURL(imageInput.files[0]);
+                });
+                base64 = await compressImage(base64, 250); 
+            }
+
+            try {
+                await db.collection("inventory").add({
+                    name, category, price, stock, image: base64, createdAt: Date.now()
+                });
+                document.getElementById('prod-name').value = ''; 
+                document.getElementById('prod-price-input').value = ''; 
+                document.getElementById('prod-stock').value = ''; 
+                document.getElementById('prod-image').value = '';
+                alert("Đã lưu hàng hóa mới!");
+                switchTab('tab-sell');
+            } catch (e) { alert("Lỗi: " + e.message); }
+            
+            btn.disabled = false; 
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Lưu Món Hàng Lên Đám Mây';
+        }
+
+        function openEditModal(id) {
+            const item = inventory.find(i => i.id === id);
+            if(!item) return;
+            document.getElementById('edit-index').value = id;
+            document.getElementById('edit-name').value = item.name;
+            document.getElementById('edit-category').value = item.category;
+            
+            const priceInput = document.getElementById('edit-price-input');
+            priceInput.value = item.price;
+            formatCurrencyInput(priceInput);
+
+            document.getElementById('edit-stock').value = item.stock;
+            document.getElementById('edit-image').value = ''; 
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
+
+        async function saveEditItem() {
+            const btn = document.getElementById('btn-save-edit');
+            const itemId = document.getElementById('edit-index').value;
+            const name = document.getElementById('edit-name').value;
+            const category = document.getElementById('edit-category').value;
+            const price = getRawNumberFromInput('edit-price-input');
+            const stock = parseInt(document.getElementById('edit-stock').value);
+            const imageInput = document.getElementById('edit-image');
+
+            if (!name || isNaN(price) || isNaN(stock)) return alert("Vui lòng nhập đủ thông tin!");
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang đồng bộ...';
+
+            const updateData = { name, category, price, stock };
+
+            if (imageInput.files.length > 0) {
+                let base64 = await new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target.result);
+                    reader.readAsDataURL(imageInput.files[0]);
+                });
+                updateData.image = await compressImage(base64, 250);
+            }
+
+            try {
+                await db.collection("inventory").doc(itemId).update(updateData);
+                closeEditModal();
+            } catch(e) { alert("Lỗi cập nhật: " + e.message); }
+            
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Cập nhật Cloud';
+        }
+
+        function renderInventory() {
+            const tbody = document.getElementById('inventory-list');
+            const noResultMsg = document.getElementById('no-result-msg');
+            tbody.innerHTML = '';
+            
+            const searchTerm = document.getElementById('search-name').value.toLowerCase();
+            const filterCat = document.getElementById('search-cat').value;
+            let countFound = 0;
+
+            inventory.forEach((item) => {
+                if (searchTerm && !item.name.toLowerCase().includes(searchTerm)) return;
+                if (filterCat !== 'all' && item.category !== filterCat) return;
+                countFound++;
+
+                const imgTag = item.image 
+                    ? `<div class="w-12 h-12 bg-white rounded shadow-sm border border-gray-200 flex items-center justify-center p-0.5 overflow-hidden"><img src="${item.image}" class="max-w-full max-h-full object-contain"></div>` 
+                    : `<div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-[10px] text-gray-500 text-center"><i class="fa-solid fa-image"></i></div>`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-blue-50 transition text-sm md:text-base";
+                tr.innerHTML = `
+                    <td class="p-3">${imgTag}</td>
+                    <td class="p-3">
+                        <div class="font-bold text-gray-800">${item.name}</div>
+                        <div class="text-[10px] text-white bg-gray-400 px-2 py-0.5 rounded-full inline-block mt-1">${item.category}</div>
+                    </td>
+                    <td class="p-3 text-red-500 font-bold whitespace-nowrap">${item.price.toLocaleString('vi-VN').replace(/,/g, '.')} đ</td>
+                    <td class="p-3 text-center font-bold ${item.stock > 0 ? 'text-green-600' : 'text-gray-400'}">${item.stock > 0 ? item.stock : 'Hết'}</td>
+                    <td class="p-3 text-center">
+                        <div class="flex justify-center gap-2">
+                            <button onclick="openEditModal('${item.id}')" class="text-yellow-600 bg-yellow-50 hover:bg-yellow-500 hover:text-white w-8 h-8 rounded transition flex items-center justify-center scale-active shadow-sm">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="deleteItem('${item.id}')" class="text-red-500 bg-red-50 hover:bg-red-500 hover:text-white w-8 h-8 rounded transition flex items-center justify-center scale-active shadow-sm">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('total-inventory-count').innerText = `Tổng: ${countFound} món`;
+            if(countFound === 0) noResultMsg.classList.remove('hidden'); else noResultMsg.classList.add('hidden');
+        }
+
+        function deleteItem(id) {
+            if(confirm(`Bạn có chắc chắn muốn xóa mặt hàng này trên toàn bộ hệ thống?`)) {
+                db.collection("inventory").doc(id).delete();
+            }
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+            
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            
+            for (let i = 0; i < firstDay; i++) {
+                grid.innerHTML += `<div></div>`;
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const hasSales = dailySales[dateStr]; 
+                const revenueText = hasSales ? `<div class="text-[9px] md:text-xs text-green-600 font-bold mt-1">${(hasSales.total / 1000)}k</div>` : '';
+                const bgClass = hasSales ? 'bg-green-50 border-green-200 hover:bg-green-100 cursor-pointer shadow-sm' : 'bg-white border-gray-100';
+                const isToday = (dateStr === getLocalTodayString()) ? 'ring-2 ring-blue-500' : '';
+
+                grid.innerHTML += `
+                    <div onclick="showDateDetail('${dateStr}')" class="p-1 md:p-2 h-14 md:h-20 border rounded-lg flex flex-col items-center justify-start transition ${bgClass} ${isToday} hover:shadow-md scale-active">
+                        <span class="text-xs md:text-sm font-bold text-gray-700">${day}</span>
+                        ${revenueText}
+                    </div>
+                `;
+            }
+        }
+
+        function showDateDetail(dateStr) {
+            currentViewedDate = dateStr;
+            const saleData = dailySales[dateStr];
+            document.getElementById('detail-date').innerText = dateStr.split('-').reverse().join('/'); 
+            const listObj = document.getElementById('detail-items-list');
+
+            let itemsToRender = (saleData && saleData.items) ? saleData.items : {};
+
+            if (Object.keys(itemsToRender).length === 0) {
+                document.getElementById('detail-revenue').innerText = "0 đ";
+                listObj.innerHTML = '<li class="text-gray-500 text-xs italic text-center mt-8">Chưa có giao dịch.</li>';
+                return;
+            }
+
+            document.getElementById('detail-revenue').innerText = saleData.total.toLocaleString('vi-VN').replace(/,/g, '.') + " đ";
+            listObj.innerHTML = '';
+            
+            for (const [itemName, itemInfo] of Object.entries(itemsToRender)) {
+                listObj.innerHTML += `
+                    <li class="p-3 bg-white rounded border border-gray-100 shadow-sm mb-2 animate-fade-in">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <div class="font-bold text-gray-800 text-sm">${itemName}</div>
+                                <div class="text-xs text-gray-500">Đơn giá: ${itemInfo.price.toLocaleString('vi-VN').replace(/,/g, '.')} đ</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-bold text-red-500">${(itemInfo.price * itemInfo.qty).toLocaleString('vi-VN').replace(/,/g, '.')} đ</div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center border-t border-gray-50 pt-2">
+                            <span class="text-xs text-gray-400">Số lượng đã bán:</span>
+                            <div class="flex items-center gap-1">
+                                <span class="font-bold text-inni-blue w-6 text-center text-sm">${itemInfo.qty}</span>
+                            </div>
+                        </div>
+                    </li>
+                `;
+            }
         }
     </script>
 </body>
